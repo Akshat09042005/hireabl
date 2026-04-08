@@ -2,7 +2,7 @@ import twilio from 'twilio'
 
 export async function sendOtp(phone: string) {
   const client = twilio(
-    process.env.TWILIO_ACCOUNT_SID!,
+    process.env.TWILIO_SID!,
     process.env.TWILIO_AUTH_TOKEN!
   )
 
@@ -18,7 +18,7 @@ export async function sendOtp(phone: string) {
 
 export async function verifyOtp(phone: string, code: string) {
   const client = twilio(
-    process.env.TWILIO_ACCOUNT_SID!,
+    process.env.TWILIO_SID!,
     process.env.TWILIO_AUTH_TOKEN!
   )
 
