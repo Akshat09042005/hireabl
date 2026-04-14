@@ -1,6 +1,6 @@
 import { Strategy as GoogleStrategy, Profile as GoogleProfile } from 'passport-google-oauth20'
 import { Strategy as MicrosoftStrategy } from 'passport-microsoft'
-import { Strategy as LinkedInStrategy } from 'passport-linkedin-oauth2'
+import OAuth2Strategy from 'passport-oauth2'
 import { PassportStatic } from 'passport'
 import { findOrCreateOAuthUser } from './auth.service'
 
@@ -116,9 +116,11 @@ export function initPassport(passport: PassportStatic) {
     }
   ))
 
-  // ✅ LinkedIn Strategy
-  passport.use(new LinkedInStrategy(
+  // ✅ LinkedIn Strategy (OpenID Connect)
+  const linkedinStrategy = new OAuth2Strategy(
     {
+      authorizationURL: 'https://www.linkedin.com/oauth/v2/authorization',
+      tokenURL: 'https://www.linkedin.com/oauth/v2/accessToken',
       clientID: process.env.LINKEDIN_CLIENT_ID!,
       clientSecret: process.env.LINKEDIN_CLIENT_SECRET!,
       callbackURL: LINKEDIN_CALLBACK_URL,
@@ -129,16 +131,26 @@ export function initPassport(passport: PassportStatic) {
       req: any,
       accessToken: string,
       refreshToken: string,
+      params: any,
       profile: any,
       done: Function
     ) => {
       try {
         console.log('[passport] LinkedIn verify callback reached')
-        const email = profile.emails?.[0]?.value || null
-        const name = profile.displayName || ''
-        const providerId = profile.id
 
-        // Extract role from state (passed from frontend)
+        // Fetch profile from LinkedIn OpenID Connect userinfo endpoint
+        const res = await fetch('https://api.linkedin.com/v2/userinfo', {
+          headers: { Authorization: `Bearer ${accessToken}` },
+        })
+        if (!res.ok) {
+          console.error('[passport] LinkedIn userinfo error:', await res.text())
+          return done(new Error('Failed to fetch LinkedIn profile'), null)
+        }
+        const info = (await res.json()) as any
+
+        const email = info.email || null
+        const name = [info.given_name, info.family_name].filter(Boolean).join(' ')
+        const providerId = info.sub
         const role = (req.query.state as string) || 'employee'
 
         if (!email) {
@@ -150,7 +162,7 @@ export function initPassport(passport: PassportStatic) {
           name,
           provider: 'linkedin',
           providerId,
-          role: role.toLowerCase() === 'employer' ? 'employer' : 'employee'
+          role: role.toLowerCase() === 'employer' ? 'employer' : 'employee',
         })
 
         return done(null, user)
@@ -158,7 +170,9 @@ export function initPassport(passport: PassportStatic) {
         return done(err, null)
       }
     }
-  ))
+  )
+  linkedinStrategy.name = 'linkedin'
+  passport.use(linkedinStrategy)
 
   // ✅ Session
   passport.serializeUser((user: any, done: Function) => done(null, user))
