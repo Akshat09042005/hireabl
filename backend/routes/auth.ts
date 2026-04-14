@@ -26,6 +26,7 @@ import {
   sendOtpController,
   verifyOtpController,
 } from '../controllers/otp.controller'
+import { oauthLimiter, otpLimiter, verifyOtpLimiter } from '../middleware/rateLimiters'
 
 const router = express.Router()
 const FRONTEND_URL = process.env.FRONTEND_URL || 'http://localhost:5173'
@@ -36,8 +37,8 @@ function sanitizeRole(input: unknown): 'employee' | 'employer' {
 }
 
 // ── OTP ───────────────────────────────────────────────────────
-router.post('/otp/send', sendOtpController)
-router.post('/otp/verify', verifyOtpController)
+router.post('/otp/send', otpLimiter, sendOtpController)
+router.post('/otp/verify', verifyOtpLimiter, verifyOtpController)
 
 // ── Debug ─────────────────────────────────────────────────────
 router.get('/oauth-debug', oauthDebugController)
@@ -45,10 +46,12 @@ router.get('/oauth-debug', oauthDebugController)
 // ── Google OAuth ──────────────────────────────────────────────
 router.get('/google', (req, res, next) => {
   const role = sanitizeRole(req.query.role)
+  oauthLimiter(req, res, () => {
   passport.authenticate('google', { 
     scope: ['profile', 'email'],
     state: role 
   })(req, res, next)
+  })
 })
 
 router.get('/google/callback',
@@ -59,10 +62,12 @@ router.get('/google/callback',
 // ── Microsoft OAuth ───────────────────────────────────────────
 router.get('/microsoft', (req, res, next) => {
   const role = sanitizeRole(req.query.role)
+  oauthLimiter(req, res, () => {
   passport.authenticate('microsoft', { 
     prompt: 'select_account',
     state: role
   })(req, res, next)
+  })
 })
 
 router.get('/microsoft/callback',
@@ -73,7 +78,9 @@ router.get('/microsoft/callback',
 // ── LinkedIn OAuth ──────────────────────────────────────────────
 router.get('/linkedin', (req, res, next) => {
   const role = sanitizeRole(req.query.role)
-  passport.authenticate('linkedin', { state: role })(req, res, next)
+  oauthLimiter(req, res, () => {
+    passport.authenticate('linkedin', { state: role })(req, res, next)
+  })
 })
 
 router.get('/linkedin/callback',

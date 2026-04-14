@@ -2,11 +2,14 @@ import { useState, useEffect, useRef } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import { toast } from 'react-toastify'
 import { Phone, KeyRound } from 'lucide-react'
+import { useAuth } from '../context/AuthContext'
+import { getErrorMessage } from '../utils/apiError'
 
 const OTP_LENGTH = 6
 const PHONE_REGEX = /^\+91\d{10}$/
 const BACKEND_URL =
   import.meta.env.VITE_BACKEND_URL || 'http://localhost:5051'
+const RESEND_COOLDOWN_SECONDS = 120
 
 /** Digits only → +91 + last 10 digits */
 function toIndiaE164(raw) {
@@ -20,6 +23,7 @@ function VerifyOtpPage() {
   const navigate = useNavigate()
   const [searchParams] = useSearchParams()
   const nextPath = searchParams.get('next') || '/dashboard'
+  const { token } = useAuth()
 
   const [phone, setPhone] = useState('+91')
   const [otp, setOtp] = useState(Array(OTP_LENGTH).fill(''))
@@ -28,12 +32,59 @@ function VerifyOtpPage() {
   const [otpSent, setOtpSent] = useState(false)
   const [sendingOtp, setSendingOtp] = useState(false)
   const [verifying, setVerifying] = useState(false)
+  const [secondsRemaining, setSecondsRemaining] = useState(0)
+  const intervalRef = useRef(null)
 
   const [phoneError, setPhoneError] = useState('')
   const [otpError, setOtpError] = useState('')
 
+  const mapOtpErrorMessage = (message, mode) => {
+    if (!message) {
+      return mode === 'send'
+        ? 'Unable to send OTP. Check your number or try again'
+        : 'Unable to process request. Please try again'
+    }
+
+    if (message.includes('Failed to send OTP')) {
+      return 'Unable to send OTP. Check your number or try again'
+    }
+    if (message.includes('Too many')) {
+      return 'Too many attempts. Please wait'
+    }
+    if (message.includes('Please enter a valid phone number')) {
+      return 'Please enter a valid phone number'
+    }
+    if (message.includes('Phone number already in use')) {
+      return 'Phone number already in use'
+    }
+
+    return message
+  }
+
+  const clearTimer = () => {
+    if (intervalRef.current) {
+      clearInterval(intervalRef.current)
+      intervalRef.current = null
+    }
+  }
+
+  const startResendTimer = () => {
+    clearTimer()
+    setSecondsRemaining(RESEND_COOLDOWN_SECONDS)
+    intervalRef.current = setInterval(() => {
+      setSecondsRemaining((prev) => {
+        if (prev <= 1) {
+          clearTimer()
+          return 0
+        }
+        return prev - 1
+      })
+    }, 1000)
+  }
+
   useEffect(() => {
     if (searchParams.get('social') === 'success') {
+      startResendTimer()
       const timer = setTimeout(() => {
         toast.success('Social signup successful! Please verify your phone number.')
         const newParams = new URLSearchParams(searchParams)
@@ -43,6 +94,10 @@ function VerifyOtpPage() {
       return () => clearTimeout(timer)
     }
   }, [searchParams, navigate])
+
+  useEffect(() => {
+    return () => clearTimer()
+  }, [])
 
   const handleSendOtp = async () => {
     const normalized = toIndiaE164(phone)
@@ -61,15 +116,22 @@ function VerifyOtpPage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ phone: normalized }),
       })
-
-      const data = await res.json()
-      if (!res.ok) throw new Error(data.message)
+      if (!res.ok) {
+        const msg = await getErrorMessage(res, 'Unable to send OTP')
+        throw new Error(msg)
+      }
 
       setOtpSent(true)
       setOtp(Array(OTP_LENGTH).fill(''))
       setOtpError('')
+      startResendTimer()
     } catch (err) {
-      setPhoneError(err.message || 'Failed to send OTP')
+      if (err instanceof TypeError) {
+        setPhoneError('Network error. Please check your connection')
+      } else {
+        const msg = err instanceof Error ? err.message : ''
+        setPhoneError(mapOtpErrorMessage(msg, 'send'))
+      }
     } finally {
       setSendingOtp(false)
     }
@@ -88,17 +150,27 @@ function VerifyOtpPage() {
 
       const res = await fetch(`${BACKEND_URL}/api/v1/auth/otp/verify`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
         body: JSON.stringify({ phone, otp: otpValue }),
       })
-
-      const data = await res.json()
-      if (!res.ok) throw new Error(data.message)
+      if (!res.ok) {
+        const msg = await getErrorMessage(res, 'Unable to process request. Please try again')
+        throw new Error(msg)
+      }
 
       toast.success('Verified successfully!')
+      console.log('Next Path:', nextPath)
       navigate(nextPath)
     } catch (err) {
-      setOtpError(err.message || 'Invalid OTP')
+      if (err instanceof TypeError) {
+        setOtpError('Network error. Please check your connection')
+      } else {
+        const msg = err instanceof Error ? err.message : ''
+        setOtpError(mapOtpErrorMessage(msg, 'verify'))
+      }
     } finally {
       setVerifying(false)
     }
@@ -108,7 +180,7 @@ function VerifyOtpPage() {
     const digits = e.target.value.replace(/\D/g, '')
     const after91 = digits.startsWith('91') ? digits.slice(2) : digits
     setPhone(`+91${after91.slice(0, 10)}`)
-    if (phoneError) setPhoneError('')
+    setPhoneError('')
   }
 
   const handleOtpBoxChange = (value, index) => {
@@ -120,7 +192,7 @@ function VerifyOtpPage() {
     if (d && index < OTP_LENGTH - 1) {
       inputRefs.current[index + 1].focus()
     }
-    if (otpError) setOtpError('')
+    setOtpError('')
   }
 
   const handleKeyDown = (e, index) => {
@@ -212,9 +284,11 @@ function VerifyOtpPage() {
                 <button 
                   className="block w-full mt-[24px] bg-none border-none text-[#6b7280] font-medium underline cursor-pointer text-[14px] hover:text-[#111827] disabled:opacity-50 disabled:cursor-not-allowed" 
                   onClick={handleSendOtp}
-                  disabled={sendingOtp || verifying}
+                  disabled={sendingOtp || verifying || secondsRemaining > 0}
                 >
-                  Resend OTP
+                  {secondsRemaining > 0
+                    ? `Resend OTP in ${secondsRemaining}s`
+                    : 'Resend OTP'}
                 </button>
               </div>
             )}

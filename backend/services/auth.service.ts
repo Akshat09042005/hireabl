@@ -17,7 +17,8 @@ export async function findOrCreateOAuthUser(data: {
   role: string
 }) {
   const { provider, providerId, email, name, role } = data
-  console.log(`[auth.service] findOrCreateOAuthUser: ${provider} | ${email} | role: ${role}`)
+  const normalizedEmail = email?.trim().toLowerCase() || null
+  console.log(`[auth.service] findOrCreateOAuthUser: ${provider} | ${normalizedEmail} | role: ${role}`)
 
   // 1. Find existing user by provider/id
   let user = await prisma.user.findUnique({
@@ -32,9 +33,9 @@ export async function findOrCreateOAuthUser(data: {
   console.log(`[auth.service] Search by provider/id: ${user ? 'found' : 'not found'}`)
 
   // 2. If not found, check by email (optional, but good for linking)
-  if (!user && email) {
+  if (!user && normalizedEmail) {
     user = await prisma.user.findUnique({
-      where: { email },
+      where: { email: normalizedEmail },
       include: {
         employee: true,
         employer: true
@@ -60,7 +61,7 @@ export async function findOrCreateOAuthUser(data: {
     console.log(`[auth.service] Creating new user for role: ${role}`)
     user = await prisma.user.create({
       data: {
-        email,
+        email: normalizedEmail,
         name,
         provider,
         providerId,

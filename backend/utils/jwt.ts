@@ -1,9 +1,13 @@
 import jwt from 'jsonwebtoken'
 
-const JWT_SECRET = process.env.JWT_SECRET
-if (!JWT_SECRET) {
-  throw new Error('Missing JWT_SECRET in environment variables')
+function getJwtSecret(): string {
+  const secret = process.env.JWT_SECRET
+  if (!secret) {
+    throw new Error('Missing JWT_SECRET in environment variables')
+  }
+  return secret
 }
+const JWT_SECRET = getJwtSecret()
 
 /**
  * Generates a JWT token for a user.

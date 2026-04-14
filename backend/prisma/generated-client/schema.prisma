@@ -13,16 +13,22 @@ datasource db {
 }
 
 model User {
-  id         String    @id @default(uuid())
-  email      String?   @unique
-  phone      String?   @unique
-  name       String?
-  provider   String? // 'google', 'microsoft', 'linkedin'
-  providerId String?
-  role       String    @default("employee") // 'employee', 'employer'
-  createdAt  DateTime  @default(now())
-  employee   Employee?
-  employer   Employer?
+  id                  String    @id @default(uuid())
+  email               String?   @unique
+  phone               String?   @unique
+  name                String?
+  country             String?
+  city                String?
+  qualification       String?
+  companyName         String?
+  profilePhoto        String?
+  onboardingCompleted Boolean   @default(false)
+  provider            String? // 'google', 'microsoft', 'linkedin'
+  providerId          String?
+  role                String    @default("employee") // 'employee', 'employer'
+  createdAt           DateTime  @default(now())
+  employee            Employee?
+  employer            Employer?
 
   @@unique([provider, providerId])
 }

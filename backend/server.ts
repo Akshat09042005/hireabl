@@ -8,6 +8,9 @@ import passport from 'passport'
 import { initPassport } from './services/passport.service'
 import authRoutes from './routes/auth'
 import employeeRoutes from './routes/employee'
+import employerRoutes from './routes/employer'
+import userRoutes from './routes/user'
+import { verifyJWT } from './middleware/verifyJWT'
 import { notFound } from './middleware/notFound'
 import { errorHandler } from './middleware/errorHandler'
 
@@ -37,7 +40,9 @@ initPassport(passport)
 
 // ── Routes ───────────────────────────────────────────────
 app.use('/api/v1/auth', authRoutes)
-app.use('/api/v1/employee', employeeRoutes)
+app.use('/api/v1/user', verifyJWT, userRoutes)
+app.use('/api/v1/employer', verifyJWT, employerRoutes)
+app.use('/api/v1/employee', verifyJWT, employeeRoutes)
 
 // ── Error handling ───────────────────────────────────────
 app.use(notFound)

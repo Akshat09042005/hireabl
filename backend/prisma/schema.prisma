@@ -17,6 +17,12 @@ model User {
   email      String?   @unique
   phone      String?   @unique
   name       String?
+  country    String?
+  city       String?
+  qualification String?
+  companyName String?
+  profilePhoto String?
+  onboardingCompleted Boolean @default(false)
   provider   String?   // 'google', 'microsoft', 'linkedin'
   providerId String?
   role       String    @default("employee") // 'employee', 'employer'

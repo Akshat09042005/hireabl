@@ -1,5 +1,6 @@
 import { NextFunction, Request, Response } from 'express'
 import { verifyToken } from '../utils/jwt'
+import { sendError } from '../utils/response'
 
 type JwtUser = {
   id: string
@@ -11,33 +12,24 @@ export type AuthenticatedRequest = Request & {
   user?: JwtUser
 }
 
-export function verifyJWT(req: AuthenticatedRequest, res: Response, next: NextFunction) {
+export function verifyJWT(req: Request, res: Response, next: NextFunction) {
   const authHeader = req.headers.authorization
   if (!authHeader || !authHeader.startsWith('Bearer ')) {
-    return res.status(401).json({
-      success: false,
-      message: 'Authorization token missing',
-    })
+    return sendError(res, 'Please login again', 401, 'AUTH_TOKEN_MISSING')
   }
 
   const token = authHeader.slice('Bearer '.length).trim()
   const payload = verifyToken(token)
   if (!payload || typeof payload !== 'object') {
-    return res.status(401).json({
-      success: false,
-      message: 'Invalid or expired token',
-    })
+    return sendError(res, 'Please login again', 401, 'AUTH_TOKEN_INVALID')
   }
 
   const tokenUser = payload as Partial<JwtUser>
   if (!tokenUser.id || !tokenUser.role) {
-    return res.status(401).json({
-      success: false,
-      message: 'Invalid token payload',
-    })
+    return sendError(res, 'Please login again', 401, 'AUTH_TOKEN_INVALID')
   }
 
-  req.user = {
+  ;(req as AuthenticatedRequest).user = {
     id: tokenUser.id,
     email: tokenUser.email ?? null,
     role: tokenUser.role,

@@ -1063,6 +1063,12 @@ export namespace Prisma {
     email: string | null
     phone: string | null
     name: string | null
+    country: string | null
+    city: string | null
+    qualification: string | null
+    companyName: string | null
+    profilePhoto: string | null
+    onboardingCompleted: boolean | null
     provider: string | null
     providerId: string | null
     role: string | null
@@ -1074,6 +1080,12 @@ export namespace Prisma {
     email: string | null
     phone: string | null
     name: string | null
+    country: string | null
+    city: string | null
+    qualification: string | null
+    companyName: string | null
+    profilePhoto: string | null
+    onboardingCompleted: boolean | null
     provider: string | null
     providerId: string | null
     role: string | null
@@ -1085,6 +1097,12 @@ export namespace Prisma {
     email: number
     phone: number
     name: number
+    country: number
+    city: number
+    qualification: number
+    companyName: number
+    profilePhoto: number
+    onboardingCompleted: number
     provider: number
     providerId: number
     role: number
@@ -1098,6 +1116,12 @@ export namespace Prisma {
     email?: true
     phone?: true
     name?: true
+    country?: true
+    city?: true
+    qualification?: true
+    companyName?: true
+    profilePhoto?: true
+    onboardingCompleted?: true
     provider?: true
     providerId?: true
     role?: true
@@ -1109,6 +1133,12 @@ export namespace Prisma {
     email?: true
     phone?: true
     name?: true
+    country?: true
+    city?: true
+    qualification?: true
+    companyName?: true
+    profilePhoto?: true
+    onboardingCompleted?: true
     provider?: true
     providerId?: true
     role?: true
@@ -1120,6 +1150,12 @@ export namespace Prisma {
     email?: true
     phone?: true
     name?: true
+    country?: true
+    city?: true
+    qualification?: true
+    companyName?: true
+    profilePhoto?: true
+    onboardingCompleted?: true
     provider?: true
     providerId?: true
     role?: true
@@ -1204,6 +1240,12 @@ export namespace Prisma {
     email: string | null
     phone: string | null
     name: string | null
+    country: string | null
+    city: string | null
+    qualification: string | null
+    companyName: string | null
+    profilePhoto: string | null
+    onboardingCompleted: boolean
     provider: string | null
     providerId: string | null
     role: string
@@ -1232,6 +1274,12 @@ export namespace Prisma {
     email?: boolean
     phone?: boolean
     name?: boolean
+    country?: boolean
+    city?: boolean
+    qualification?: boolean
+    companyName?: boolean
+    profilePhoto?: boolean
+    onboardingCompleted?: boolean
     provider?: boolean
     providerId?: boolean
     role?: boolean
@@ -1245,6 +1293,12 @@ export namespace Prisma {
     email?: boolean
     phone?: boolean
     name?: boolean
+    country?: boolean
+    city?: boolean
+    qualification?: boolean
+    companyName?: boolean
+    profilePhoto?: boolean
+    onboardingCompleted?: boolean
     provider?: boolean
     providerId?: boolean
     role?: boolean
@@ -1256,6 +1310,12 @@ export namespace Prisma {
     email?: boolean
     phone?: boolean
     name?: boolean
+    country?: boolean
+    city?: boolean
+    qualification?: boolean
+    companyName?: boolean
+    profilePhoto?: boolean
+    onboardingCompleted?: boolean
     provider?: boolean
     providerId?: boolean
     role?: boolean
@@ -1267,13 +1327,19 @@ export namespace Prisma {
     email?: boolean
     phone?: boolean
     name?: boolean
+    country?: boolean
+    city?: boolean
+    qualification?: boolean
+    companyName?: boolean
+    profilePhoto?: boolean
+    onboardingCompleted?: boolean
     provider?: boolean
     providerId?: boolean
     role?: boolean
     createdAt?: boolean
   }
 
-  export type UserOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "email" | "phone" | "name" | "provider" | "providerId" | "role" | "createdAt", ExtArgs["result"]["user"]>
+  export type UserOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "email" | "phone" | "name" | "country" | "city" | "qualification" | "companyName" | "profilePhoto" | "onboardingCompleted" | "provider" | "providerId" | "role" | "createdAt", ExtArgs["result"]["user"]>
   export type UserInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     employee?: boolean | User$employeeArgs<ExtArgs>
     employer?: boolean | User$employerArgs<ExtArgs>
@@ -1292,6 +1358,12 @@ export namespace Prisma {
       email: string | null
       phone: string | null
       name: string | null
+      country: string | null
+      city: string | null
+      qualification: string | null
+      companyName: string | null
+      profilePhoto: string | null
+      onboardingCompleted: boolean
       provider: string | null
       providerId: string | null
       role: string
@@ -1725,6 +1797,12 @@ export namespace Prisma {
     readonly email: FieldRef<"User", 'String'>
     readonly phone: FieldRef<"User", 'String'>
     readonly name: FieldRef<"User", 'String'>
+    readonly country: FieldRef<"User", 'String'>
+    readonly city: FieldRef<"User", 'String'>
+    readonly qualification: FieldRef<"User", 'String'>
+    readonly companyName: FieldRef<"User", 'String'>
+    readonly profilePhoto: FieldRef<"User", 'String'>
+    readonly onboardingCompleted: FieldRef<"User", 'Boolean'>
     readonly provider: FieldRef<"User", 'String'>
     readonly providerId: FieldRef<"User", 'String'>
     readonly role: FieldRef<"User", 'String'>
@@ -4297,6 +4375,12 @@ export namespace Prisma {
     email: 'email',
     phone: 'phone',
     name: 'name',
+    country: 'country',
+    city: 'city',
+    qualification: 'qualification',
+    companyName: 'companyName',
+    profilePhoto: 'profilePhoto',
+    onboardingCompleted: 'onboardingCompleted',
     provider: 'provider',
     providerId: 'providerId',
     role: 'role',
@@ -4370,6 +4454,13 @@ export namespace Prisma {
 
 
   /**
+   * Reference to a field of type 'Boolean'
+   */
+  export type BooleanFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Boolean'>
+    
+
+
+  /**
    * Reference to a field of type 'DateTime'
    */
   export type DateTimeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'DateTime'>
@@ -4408,6 +4499,12 @@ export namespace Prisma {
     email?: StringNullableFilter<"User"> | string | null
     phone?: StringNullableFilter<"User"> | string | null
     name?: StringNullableFilter<"User"> | string | null
+    country?: StringNullableFilter<"User"> | string | null
+    city?: StringNullableFilter<"User"> | string | null
+    qualification?: StringNullableFilter<"User"> | string | null
+    companyName?: StringNullableFilter<"User"> | string | null
+    profilePhoto?: StringNullableFilter<"User"> | string | null
+    onboardingCompleted?: BoolFilter<"User"> | boolean
     provider?: StringNullableFilter<"User"> | string | null
     providerId?: StringNullableFilter<"User"> | string | null
     role?: StringFilter<"User"> | string
@@ -4421,6 +4518,12 @@ export namespace Prisma {
     email?: SortOrderInput | SortOrder
     phone?: SortOrderInput | SortOrder
     name?: SortOrderInput | SortOrder
+    country?: SortOrderInput | SortOrder
+    city?: SortOrderInput | SortOrder
+    qualification?: SortOrderInput | SortOrder
+    companyName?: SortOrderInput | SortOrder
+    profilePhoto?: SortOrderInput | SortOrder
+    onboardingCompleted?: SortOrder
     provider?: SortOrderInput | SortOrder
     providerId?: SortOrderInput | SortOrder
     role?: SortOrder
@@ -4438,6 +4541,12 @@ export namespace Prisma {
     OR?: UserWhereInput[]
     NOT?: UserWhereInput | UserWhereInput[]
     name?: StringNullableFilter<"User"> | string | null
+    country?: StringNullableFilter<"User"> | string | null
+    city?: StringNullableFilter<"User"> | string | null
+    qualification?: StringNullableFilter<"User"> | string | null
+    companyName?: StringNullableFilter<"User"> | string | null
+    profilePhoto?: StringNullableFilter<"User"> | string | null
+    onboardingCompleted?: BoolFilter<"User"> | boolean
     provider?: StringNullableFilter<"User"> | string | null
     providerId?: StringNullableFilter<"User"> | string | null
     role?: StringFilter<"User"> | string
@@ -4451,6 +4560,12 @@ export namespace Prisma {
     email?: SortOrderInput | SortOrder
     phone?: SortOrderInput | SortOrder
     name?: SortOrderInput | SortOrder
+    country?: SortOrderInput | SortOrder
+    city?: SortOrderInput | SortOrder
+    qualification?: SortOrderInput | SortOrder
+    companyName?: SortOrderInput | SortOrder
+    profilePhoto?: SortOrderInput | SortOrder
+    onboardingCompleted?: SortOrder
     provider?: SortOrderInput | SortOrder
     providerId?: SortOrderInput | SortOrder
     role?: SortOrder
@@ -4468,6 +4583,12 @@ export namespace Prisma {
     email?: StringNullableWithAggregatesFilter<"User"> | string | null
     phone?: StringNullableWithAggregatesFilter<"User"> | string | null
     name?: StringNullableWithAggregatesFilter<"User"> | string | null
+    country?: StringNullableWithAggregatesFilter<"User"> | string | null
+    city?: StringNullableWithAggregatesFilter<"User"> | string | null
+    qualification?: StringNullableWithAggregatesFilter<"User"> | string | null
+    companyName?: StringNullableWithAggregatesFilter<"User"> | string | null
+    profilePhoto?: StringNullableWithAggregatesFilter<"User"> | string | null
+    onboardingCompleted?: BoolWithAggregatesFilter<"User"> | boolean
     provider?: StringNullableWithAggregatesFilter<"User"> | string | null
     providerId?: StringNullableWithAggregatesFilter<"User"> | string | null
     role?: StringWithAggregatesFilter<"User"> | string
@@ -4579,6 +4700,12 @@ export namespace Prisma {
     email?: string | null
     phone?: string | null
     name?: string | null
+    country?: string | null
+    city?: string | null
+    qualification?: string | null
+    companyName?: string | null
+    profilePhoto?: string | null
+    onboardingCompleted?: boolean
     provider?: string | null
     providerId?: string | null
     role?: string
@@ -4592,6 +4719,12 @@ export namespace Prisma {
     email?: string | null
     phone?: string | null
     name?: string | null
+    country?: string | null
+    city?: string | null
+    qualification?: string | null
+    companyName?: string | null
+    profilePhoto?: string | null
+    onboardingCompleted?: boolean
     provider?: string | null
     providerId?: string | null
     role?: string
@@ -4605,6 +4738,12 @@ export namespace Prisma {
     email?: NullableStringFieldUpdateOperationsInput | string | null
     phone?: NullableStringFieldUpdateOperationsInput | string | null
     name?: NullableStringFieldUpdateOperationsInput | string | null
+    country?: NullableStringFieldUpdateOperationsInput | string | null
+    city?: NullableStringFieldUpdateOperationsInput | string | null
+    qualification?: NullableStringFieldUpdateOperationsInput | string | null
+    companyName?: NullableStringFieldUpdateOperationsInput | string | null
+    profilePhoto?: NullableStringFieldUpdateOperationsInput | string | null
+    onboardingCompleted?: BoolFieldUpdateOperationsInput | boolean
     provider?: NullableStringFieldUpdateOperationsInput | string | null
     providerId?: NullableStringFieldUpdateOperationsInput | string | null
     role?: StringFieldUpdateOperationsInput | string
@@ -4618,6 +4757,12 @@ export namespace Prisma {
     email?: NullableStringFieldUpdateOperationsInput | string | null
     phone?: NullableStringFieldUpdateOperationsInput | string | null
     name?: NullableStringFieldUpdateOperationsInput | string | null
+    country?: NullableStringFieldUpdateOperationsInput | string | null
+    city?: NullableStringFieldUpdateOperationsInput | string | null
+    qualification?: NullableStringFieldUpdateOperationsInput | string | null
+    companyName?: NullableStringFieldUpdateOperationsInput | string | null
+    profilePhoto?: NullableStringFieldUpdateOperationsInput | string | null
+    onboardingCompleted?: BoolFieldUpdateOperationsInput | boolean
     provider?: NullableStringFieldUpdateOperationsInput | string | null
     providerId?: NullableStringFieldUpdateOperationsInput | string | null
     role?: StringFieldUpdateOperationsInput | string
@@ -4631,6 +4776,12 @@ export namespace Prisma {
     email?: string | null
     phone?: string | null
     name?: string | null
+    country?: string | null
+    city?: string | null
+    qualification?: string | null
+    companyName?: string | null
+    profilePhoto?: string | null
+    onboardingCompleted?: boolean
     provider?: string | null
     providerId?: string | null
     role?: string
@@ -4642,6 +4793,12 @@ export namespace Prisma {
     email?: NullableStringFieldUpdateOperationsInput | string | null
     phone?: NullableStringFieldUpdateOperationsInput | string | null
     name?: NullableStringFieldUpdateOperationsInput | string | null
+    country?: NullableStringFieldUpdateOperationsInput | string | null
+    city?: NullableStringFieldUpdateOperationsInput | string | null
+    qualification?: NullableStringFieldUpdateOperationsInput | string | null
+    companyName?: NullableStringFieldUpdateOperationsInput | string | null
+    profilePhoto?: NullableStringFieldUpdateOperationsInput | string | null
+    onboardingCompleted?: BoolFieldUpdateOperationsInput | boolean
     provider?: NullableStringFieldUpdateOperationsInput | string | null
     providerId?: NullableStringFieldUpdateOperationsInput | string | null
     role?: StringFieldUpdateOperationsInput | string
@@ -4653,6 +4810,12 @@ export namespace Prisma {
     email?: NullableStringFieldUpdateOperationsInput | string | null
     phone?: NullableStringFieldUpdateOperationsInput | string | null
     name?: NullableStringFieldUpdateOperationsInput | string | null
+    country?: NullableStringFieldUpdateOperationsInput | string | null
+    city?: NullableStringFieldUpdateOperationsInput | string | null
+    qualification?: NullableStringFieldUpdateOperationsInput | string | null
+    companyName?: NullableStringFieldUpdateOperationsInput | string | null
+    profilePhoto?: NullableStringFieldUpdateOperationsInput | string | null
+    onboardingCompleted?: BoolFieldUpdateOperationsInput | boolean
     provider?: NullableStringFieldUpdateOperationsInput | string | null
     providerId?: NullableStringFieldUpdateOperationsInput | string | null
     role?: StringFieldUpdateOperationsInput | string
@@ -4785,6 +4948,11 @@ export namespace Prisma {
     not?: NestedStringNullableFilter<$PrismaModel> | string | null
   }
 
+  export type BoolFilter<$PrismaModel = never> = {
+    equals?: boolean | BooleanFieldRefInput<$PrismaModel>
+    not?: NestedBoolFilter<$PrismaModel> | boolean
+  }
+
   export type DateTimeFilter<$PrismaModel = never> = {
     equals?: Date | string | DateTimeFieldRefInput<$PrismaModel>
     in?: Date[] | string[] | ListDateTimeFieldRefInput<$PrismaModel>
@@ -4821,6 +4989,12 @@ export namespace Prisma {
     email?: SortOrder
     phone?: SortOrder
     name?: SortOrder
+    country?: SortOrder
+    city?: SortOrder
+    qualification?: SortOrder
+    companyName?: SortOrder
+    profilePhoto?: SortOrder
+    onboardingCompleted?: SortOrder
     provider?: SortOrder
     providerId?: SortOrder
     role?: SortOrder
@@ -4832,6 +5006,12 @@ export namespace Prisma {
     email?: SortOrder
     phone?: SortOrder
     name?: SortOrder
+    country?: SortOrder
+    city?: SortOrder
+    qualification?: SortOrder
+    companyName?: SortOrder
+    profilePhoto?: SortOrder
+    onboardingCompleted?: SortOrder
     provider?: SortOrder
     providerId?: SortOrder
     role?: SortOrder
@@ -4843,6 +5023,12 @@ export namespace Prisma {
     email?: SortOrder
     phone?: SortOrder
     name?: SortOrder
+    country?: SortOrder
+    city?: SortOrder
+    qualification?: SortOrder
+    companyName?: SortOrder
+    profilePhoto?: SortOrder
+    onboardingCompleted?: SortOrder
     provider?: SortOrder
     providerId?: SortOrder
     role?: SortOrder
@@ -4883,6 +5069,14 @@ export namespace Prisma {
     _count?: NestedIntNullableFilter<$PrismaModel>
     _min?: NestedStringNullableFilter<$PrismaModel>
     _max?: NestedStringNullableFilter<$PrismaModel>
+  }
+
+  export type BoolWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: boolean | BooleanFieldRefInput<$PrismaModel>
+    not?: NestedBoolWithAggregatesFilter<$PrismaModel> | boolean
+    _count?: NestedIntFilter<$PrismaModel>
+    _min?: NestedBoolFilter<$PrismaModel>
+    _max?: NestedBoolFilter<$PrismaModel>
   }
 
   export type DateTimeWithAggregatesFilter<$PrismaModel = never> = {
@@ -4976,6 +5170,10 @@ export namespace Prisma {
 
   export type NullableStringFieldUpdateOperationsInput = {
     set?: string | null
+  }
+
+  export type BoolFieldUpdateOperationsInput = {
+    set?: boolean
   }
 
   export type DateTimeFieldUpdateOperationsInput = {
@@ -5078,6 +5276,11 @@ export namespace Prisma {
     not?: NestedStringNullableFilter<$PrismaModel> | string | null
   }
 
+  export type NestedBoolFilter<$PrismaModel = never> = {
+    equals?: boolean | BooleanFieldRefInput<$PrismaModel>
+    not?: NestedBoolFilter<$PrismaModel> | boolean
+  }
+
   export type NestedDateTimeFilter<$PrismaModel = never> = {
     equals?: Date | string | DateTimeFieldRefInput<$PrismaModel>
     in?: Date[] | string[] | ListDateTimeFieldRefInput<$PrismaModel>
@@ -5143,6 +5346,14 @@ export namespace Prisma {
     gt?: number | IntFieldRefInput<$PrismaModel>
     gte?: number | IntFieldRefInput<$PrismaModel>
     not?: NestedIntNullableFilter<$PrismaModel> | number | null
+  }
+
+  export type NestedBoolWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: boolean | BooleanFieldRefInput<$PrismaModel>
+    not?: NestedBoolWithAggregatesFilter<$PrismaModel> | boolean
+    _count?: NestedIntFilter<$PrismaModel>
+    _min?: NestedBoolFilter<$PrismaModel>
+    _max?: NestedBoolFilter<$PrismaModel>
   }
 
   export type NestedDateTimeWithAggregatesFilter<$PrismaModel = never> = {
@@ -5244,6 +5455,12 @@ export namespace Prisma {
     email?: string | null
     phone?: string | null
     name?: string | null
+    country?: string | null
+    city?: string | null
+    qualification?: string | null
+    companyName?: string | null
+    profilePhoto?: string | null
+    onboardingCompleted?: boolean
     provider?: string | null
     providerId?: string | null
     role?: string
@@ -5256,6 +5473,12 @@ export namespace Prisma {
     email?: string | null
     phone?: string | null
     name?: string | null
+    country?: string | null
+    city?: string | null
+    qualification?: string | null
+    companyName?: string | null
+    profilePhoto?: string | null
+    onboardingCompleted?: boolean
     provider?: string | null
     providerId?: string | null
     role?: string
@@ -5284,6 +5507,12 @@ export namespace Prisma {
     email?: NullableStringFieldUpdateOperationsInput | string | null
     phone?: NullableStringFieldUpdateOperationsInput | string | null
     name?: NullableStringFieldUpdateOperationsInput | string | null
+    country?: NullableStringFieldUpdateOperationsInput | string | null
+    city?: NullableStringFieldUpdateOperationsInput | string | null
+    qualification?: NullableStringFieldUpdateOperationsInput | string | null
+    companyName?: NullableStringFieldUpdateOperationsInput | string | null
+    profilePhoto?: NullableStringFieldUpdateOperationsInput | string | null
+    onboardingCompleted?: BoolFieldUpdateOperationsInput | boolean
     provider?: NullableStringFieldUpdateOperationsInput | string | null
     providerId?: NullableStringFieldUpdateOperationsInput | string | null
     role?: StringFieldUpdateOperationsInput | string
@@ -5296,6 +5525,12 @@ export namespace Prisma {
     email?: NullableStringFieldUpdateOperationsInput | string | null
     phone?: NullableStringFieldUpdateOperationsInput | string | null
     name?: NullableStringFieldUpdateOperationsInput | string | null
+    country?: NullableStringFieldUpdateOperationsInput | string | null
+    city?: NullableStringFieldUpdateOperationsInput | string | null
+    qualification?: NullableStringFieldUpdateOperationsInput | string | null
+    companyName?: NullableStringFieldUpdateOperationsInput | string | null
+    profilePhoto?: NullableStringFieldUpdateOperationsInput | string | null
+    onboardingCompleted?: BoolFieldUpdateOperationsInput | boolean
     provider?: NullableStringFieldUpdateOperationsInput | string | null
     providerId?: NullableStringFieldUpdateOperationsInput | string | null
     role?: StringFieldUpdateOperationsInput | string
@@ -5308,6 +5543,12 @@ export namespace Prisma {
     email?: string | null
     phone?: string | null
     name?: string | null
+    country?: string | null
+    city?: string | null
+    qualification?: string | null
+    companyName?: string | null
+    profilePhoto?: string | null
+    onboardingCompleted?: boolean
     provider?: string | null
     providerId?: string | null
     role?: string
@@ -5320,6 +5561,12 @@ export namespace Prisma {
     email?: string | null
     phone?: string | null
     name?: string | null
+    country?: string | null
+    city?: string | null
+    qualification?: string | null
+    companyName?: string | null
+    profilePhoto?: string | null
+    onboardingCompleted?: boolean
     provider?: string | null
     providerId?: string | null
     role?: string
@@ -5348,6 +5595,12 @@ export namespace Prisma {
     email?: NullableStringFieldUpdateOperationsInput | string | null
     phone?: NullableStringFieldUpdateOperationsInput | string | null
     name?: NullableStringFieldUpdateOperationsInput | string | null
+    country?: NullableStringFieldUpdateOperationsInput | string | null
+    city?: NullableStringFieldUpdateOperationsInput | string | null
+    qualification?: NullableStringFieldUpdateOperationsInput | string | null
+    companyName?: NullableStringFieldUpdateOperationsInput | string | null
+    profilePhoto?: NullableStringFieldUpdateOperationsInput | string | null
+    onboardingCompleted?: BoolFieldUpdateOperationsInput | boolean
     provider?: NullableStringFieldUpdateOperationsInput | string | null
     providerId?: NullableStringFieldUpdateOperationsInput | string | null
     role?: StringFieldUpdateOperationsInput | string
@@ -5360,6 +5613,12 @@ export namespace Prisma {
     email?: NullableStringFieldUpdateOperationsInput | string | null
     phone?: NullableStringFieldUpdateOperationsInput | string | null
     name?: NullableStringFieldUpdateOperationsInput | string | null
+    country?: NullableStringFieldUpdateOperationsInput | string | null
+    city?: NullableStringFieldUpdateOperationsInput | string | null
+    qualification?: NullableStringFieldUpdateOperationsInput | string | null
+    companyName?: NullableStringFieldUpdateOperationsInput | string | null
+    profilePhoto?: NullableStringFieldUpdateOperationsInput | string | null
+    onboardingCompleted?: BoolFieldUpdateOperationsInput | boolean
     provider?: NullableStringFieldUpdateOperationsInput | string | null
     providerId?: NullableStringFieldUpdateOperationsInput | string | null
     role?: StringFieldUpdateOperationsInput | string
