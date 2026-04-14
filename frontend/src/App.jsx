@@ -6,7 +6,6 @@ import DashboardPage from './pages/DashboardPage'
 import ProfilePage from './pages/ProfilePage'
 import SignupEntryPage from './pages/SignupEntryPage'
 import VerifyOtpPage from './pages/VerifyOtpPage'
-import './styles/signup-flow.css'
 
 function App() {
   return (

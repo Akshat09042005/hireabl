@@ -7,6 +7,7 @@ import passport from 'passport'
 
 import { initPassport } from './services/passport.service'
 import authRoutes from './routes/auth'
+import employeeRoutes from './routes/employee'
 import { notFound } from './middleware/notFound'
 import { errorHandler } from './middleware/errorHandler'
 
@@ -36,11 +37,12 @@ initPassport(passport)
 
 // ── Routes ───────────────────────────────────────────────
 app.use('/api/v1/auth', authRoutes)
+app.use('/api/v1/employee', employeeRoutes)
 
 // ── Error handling ───────────────────────────────────────
 app.use(notFound)
 app.use(errorHandler)
 
 app.listen(PORT, () => {
-  console.log(`✅ Server running on http://localhost:${PORT}`)
+  console.log(` Server running on http://localhost:${PORT}`)
 })

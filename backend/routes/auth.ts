@@ -19,6 +19,7 @@ import passport from 'passport'
 import {
   googleCallbackController,
   microsoftCallbackController,
+  linkedinCallbackController,
   oauthDebugController,
 } from '../controllers/auth.controller'
 import {
@@ -36,9 +37,13 @@ router.post('/otp/verify', verifyOtpController)
 router.get('/oauth-debug', oauthDebugController)
 
 // ── Google OAuth ──────────────────────────────────────────────
-router.get('/google',
-  passport.authenticate('google', { scope: ['profile', 'email'] }),
-)
+router.get('/google', (req, res, next) => {
+  const role = (req.query.role as string) || 'employee'
+  passport.authenticate('google', { 
+    scope: ['profile', 'email'],
+    state: role 
+  })(req, res, next)
+})
 
 router.get('/google/callback',
   passport.authenticate('google', { failureRedirect: '/' }),
@@ -46,13 +51,28 @@ router.get('/google/callback',
 )
 
 // ── Microsoft OAuth ───────────────────────────────────────────
-router.get('/microsoft',
-  passport.authenticate('microsoft', { prompt: 'select_account' }),
-)
+router.get('/microsoft', (req, res, next) => {
+  const role = (req.query.role as string) || 'employee'
+  passport.authenticate('microsoft', { 
+    prompt: 'select_account',
+    state: role
+  })(req, res, next)
+})
 
 router.get('/microsoft/callback',
   passport.authenticate('microsoft', { failureRedirect: '/' }),
   microsoftCallbackController,
+)
+
+// ── LinkedIn OAuth ──────────────────────────────────────────────
+router.get('/linkedin', (req, res, next) => {
+  const role = (req.query.role as string) || 'employee'
+  passport.authenticate('linkedin', { state: role })(req, res, next)
+})
+
+router.get('/linkedin/callback',
+  passport.authenticate('linkedin', { failureRedirect: '/signup?error=linkedin_failed' }),
+  linkedinCallbackController,
 )
 
 export default router

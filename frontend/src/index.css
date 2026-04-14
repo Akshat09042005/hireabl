@@ -1,7 +1,36 @@
+@import "tailwindcss";
+
+@theme {
+  --animate-signup-fade-in: signup-fade-in 0.4s ease-out;
+  --animate-signup-social-fade-in: signup-social-fade-in 0.42s ease-out both;
+
+  @keyframes signup-fade-in {
+    from {
+      opacity: 0;
+      transform: translateY(20px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  @keyframes signup-social-fade-in {
+    from {
+      opacity: 0;
+      transform: translateY(10px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+}
+
 body {
   margin: 0;
-  font-family: Inter, Avenir, Helvetica, Arial, sans-serif;
-  background: #f5f7fb;
+  font-family: 'Inter', sans-serif;
+  background-color: #f5f7fb;
   color: #101828;
 }
 
