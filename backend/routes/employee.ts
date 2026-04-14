@@ -10,10 +10,11 @@
 
 import express from 'express'
 import { createEmployeeController } from '../controllers/employee.controller'
+import { verifyJWT } from '../middleware/verifyJWT'
 
 const router = express.Router()
 
 // CREATE Employee
-router.post('/create', createEmployeeController)
+router.post('/create', verifyJWT, createEmployeeController)
 
 export default router

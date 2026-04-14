@@ -19,6 +19,7 @@ function toIndiaE164(raw) {
 function VerifyOtpPage() {
   const navigate = useNavigate()
   const [searchParams] = useSearchParams()
+  const nextPath = searchParams.get('next') || '/dashboard'
 
   const [phone, setPhone] = useState('+91')
   const [otp, setOtp] = useState(Array(OTP_LENGTH).fill(''))
@@ -95,7 +96,7 @@ function VerifyOtpPage() {
       if (!res.ok) throw new Error(data.message)
 
       toast.success('Verified successfully!')
-      navigate('/dashboard')
+      navigate(nextPath)
     } catch (err) {
       setOtpError(err.message || 'Invalid OTP')
     } finally {

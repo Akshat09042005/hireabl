@@ -30,6 +30,10 @@ export const GOOGLE_CALLBACK_URL = googleCallbackUrl()
 export const MICROSOFT_CALLBACK_URL = microsoftCallbackUrl()
 export const LINKEDIN_CALLBACK_URL = linkedinCallbackUrl()
 
+function sanitizeRole(input: unknown): 'employee' | 'employer' {
+  return input === 'employer' ? 'employer' : 'employee'
+}
+
 // ── Passport Init ───────────────────────────────────────
 
 export function initPassport(passport: PassportStatic) {
@@ -54,7 +58,7 @@ export function initPassport(passport: PassportStatic) {
         const email = profile.emails?.[0]?.value ?? null
         const name = profile.displayName || ''
         const providerId = profile.id
-        const role = (req.query.state as string) || 'employee'
+        const role = sanitizeRole(req.query?.state)
 
         if (!email) {
           return done(new Error('Email is required from Google profile'), null)
@@ -65,7 +69,7 @@ export function initPassport(passport: PassportStatic) {
           name,
           provider: 'google',
           providerId,
-          role: role.toLowerCase() === 'employer' ? 'employer' : 'employee'
+          role,
         })
 
         return done(null, user)
@@ -95,7 +99,7 @@ export function initPassport(passport: PassportStatic) {
         const email = profile.emails?.[0]?.value ?? null
         const name = profile.displayName || ''
         const providerId = profile.id
-        const role = (req.query.state as string) || 'employee'
+        const role = sanitizeRole(req.query?.state)
 
         if (!email) {
           return done(new Error('Email is required from Microsoft profile'), null)
@@ -106,7 +110,7 @@ export function initPassport(passport: PassportStatic) {
           name,
           provider: 'microsoft',
           providerId,
-          role: role.toLowerCase() === 'employer' ? 'employer' : 'employee'
+          role,
         })
 
         return done(null, user)
@@ -151,7 +155,7 @@ export function initPassport(passport: PassportStatic) {
         const email = info.email || null
         const name = [info.given_name, info.family_name].filter(Boolean).join(' ')
         const providerId = info.sub
-        const role = (req.query.state as string) || 'employee'
+        const role = sanitizeRole(req.query?.state)
 
         if (!email) {
           return done(new Error('Email is required from LinkedIn profile'), null)
@@ -162,7 +166,7 @@ export function initPassport(passport: PassportStatic) {
           name,
           provider: 'linkedin',
           providerId,
-          role: role.toLowerCase() === 'employer' ? 'employer' : 'employee',
+          role,
         })
 
         return done(null, user)

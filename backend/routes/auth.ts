@@ -28,6 +28,12 @@ import {
 } from '../controllers/otp.controller'
 
 const router = express.Router()
+const FRONTEND_URL = process.env.FRONTEND_URL || 'http://localhost:5173'
+const OAUTH_FAILURE_REDIRECT = `${FRONTEND_URL}/login?error=oauth_failed`
+
+function sanitizeRole(input: unknown): 'employee' | 'employer' {
+  return input === 'employer' ? 'employer' : 'employee'
+}
 
 // ── OTP ───────────────────────────────────────────────────────
 router.post('/otp/send', sendOtpController)
@@ -38,7 +44,7 @@ router.get('/oauth-debug', oauthDebugController)
 
 // ── Google OAuth ──────────────────────────────────────────────
 router.get('/google', (req, res, next) => {
-  const role = (req.query.role as string) || 'employee'
+  const role = sanitizeRole(req.query.role)
   passport.authenticate('google', { 
     scope: ['profile', 'email'],
     state: role 
@@ -46,13 +52,13 @@ router.get('/google', (req, res, next) => {
 })
 
 router.get('/google/callback',
-  passport.authenticate('google', { failureRedirect: '/' }),
+  passport.authenticate('google', { failureRedirect: OAUTH_FAILURE_REDIRECT }),
   googleCallbackController,
 )
 
 // ── Microsoft OAuth ───────────────────────────────────────────
 router.get('/microsoft', (req, res, next) => {
-  const role = (req.query.role as string) || 'employee'
+  const role = sanitizeRole(req.query.role)
   passport.authenticate('microsoft', { 
     prompt: 'select_account',
     state: role
@@ -60,18 +66,18 @@ router.get('/microsoft', (req, res, next) => {
 })
 
 router.get('/microsoft/callback',
-  passport.authenticate('microsoft', { failureRedirect: '/' }),
+  passport.authenticate('microsoft', { failureRedirect: OAUTH_FAILURE_REDIRECT }),
   microsoftCallbackController,
 )
 
 // ── LinkedIn OAuth ──────────────────────────────────────────────
 router.get('/linkedin', (req, res, next) => {
-  const role = (req.query.role as string) || 'employee'
+  const role = sanitizeRole(req.query.role)
   passport.authenticate('linkedin', { state: role })(req, res, next)
 })
 
 router.get('/linkedin/callback',
-  passport.authenticate('linkedin', { failureRedirect: '/signup?error=linkedin_failed' }),
+  passport.authenticate('linkedin', { failureRedirect: OAUTH_FAILURE_REDIRECT }),
   linkedinCallbackController,
 )
 
