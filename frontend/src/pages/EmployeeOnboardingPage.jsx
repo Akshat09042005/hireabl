@@ -28,8 +28,7 @@ function EmployeeOnboardingPage() {
     companyName: '',
     profilePhoto: '',
   })
-  const [photoFile, setPhotoFile] = useState(null)
-  const [photoPreview, setPhotoPreview] = useState('')
+  const [resumeFile, setResumeFile] = useState(null)
   const [loadingProfile, setLoadingProfile] = useState(true)
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState('')
@@ -37,7 +36,6 @@ function EmployeeOnboardingPage() {
   const fieldRefs = useRef({})
   const [editableFields, setEditableFields] = useState({
     name: false,
-    email: false,
     phone: false,
   })
 
@@ -83,7 +81,6 @@ function EmployeeOnboardingPage() {
             companyName: dbUser.companyName || '',
             profilePhoto: dbUser.profilePhoto || '',
           })
-          setPhotoPreview(dbUser.profilePhoto || '')
         }
       } catch (err) {
         if (!cancelled) {
@@ -120,20 +117,25 @@ function EmployeeOnboardingPage() {
     if (editableFields.name) fieldRefs.current.name?.focus()
   }, [editableFields.name])
 
-  useEffect(() => {
-    if (editableFields.email) fieldRefs.current.email?.focus()
-  }, [editableFields.email])
+  // Profile completion calculation
+  const { completion, filledFields } = useMemo(() => {
+    const fields = [profile.name, profile.phone, profile.country, profile.city, profile.qualification, profile.companyName]
+    const filled = fields.filter((f) => String(f || '').trim()).length
+    return { completion: Math.round((filled / fields.length) * 100), filledFields: filled }
+  }, [profile.name, profile.phone, profile.country, profile.city, profile.qualification, profile.companyName])
 
   const isContinueDisabled = useMemo(
     () => (
       submitting ||
       loadingProfile ||
+      !profile.name.trim() ||
+      !profile.phone.trim() ||
       !profile.country.trim() ||
       !profile.city.trim() ||
       !profile.qualification.trim() ||
       !profile.companyName.trim()
     ),
-    [submitting, loadingProfile, profile.country, profile.city, profile.qualification, profile.companyName],
+    [submitting, loadingProfile, profile.name, profile.phone, profile.country, profile.city, profile.qualification, profile.companyName],
   )
 
   const handleChange = (field) => (e) => {
@@ -159,21 +161,20 @@ function EmployeeOnboardingPage() {
     }
   }
 
-  const handlePhotoChange = (e) => {
+  const handleResumeChange = (e) => {
     const file = e.target.files?.[0]
     if (!file) return
-    if (!file.type.startsWith('image/')) {
-      setError('Please upload a valid image file')
+    const allowed = ['application/pdf', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document']
+    if (!allowed.includes(file.type)) {
+      setError('Please upload a valid resume file (PDF, DOC, or DOCX)')
       return
     }
-
-    setPhotoFile(file)
-    const reader = new FileReader()
-    reader.onload = () => {
-      const result = typeof reader.result === 'string' ? reader.result : ''
-      setPhotoPreview(result)
+    if (file.size > 2 * 1024 * 1024) {
+      setError('Resume file must be under 2 MB')
+      return
     }
-    reader.readAsDataURL(file)
+    setResumeFile(file)
+    if (error) setError('')
   }
 
   const handleSubmit = async (e) => {
@@ -189,6 +190,7 @@ function EmployeeOnboardingPage() {
     }
 
     const nextFieldErrors = {}
+    if (!payload.name) nextFieldErrors.name = 'Name is required'
     if (!payload.country) nextFieldErrors.country = 'Country is required'
     if (!payload.city) nextFieldErrors.city = 'City is required'
     if (!payload.qualification) nextFieldErrors.qualification = 'Qualification is required'
@@ -196,7 +198,7 @@ function EmployeeOnboardingPage() {
 
     if (Object.keys(nextFieldErrors).length > 0) {
       setFieldErrors(nextFieldErrors)
-      const firstErrorField = ['country', 'city', 'qualification', 'companyName']
+      const firstErrorField = ['name', 'country', 'city', 'qualification', 'companyName']
         .find((key) => nextFieldErrors[key])
       if (firstErrorField && fieldRefs.current[firstErrorField]) {
         fieldRefs.current[firstErrorField].scrollIntoView({ behavior: 'smooth', block: 'center' })
@@ -217,7 +219,7 @@ function EmployeeOnboardingPage() {
         },
         body: JSON.stringify({
           ...payload,
-          profilePhoto: photoPreview || profile.profilePhoto || '',
+          profilePhoto: profile.profilePhoto || '',
         }),
       })
       if (!res.ok) {
@@ -233,187 +235,207 @@ function EmployeeOnboardingPage() {
     }
   }
 
+  const displayName = profile.name || authUser?.name || authUser?.email?.split('@')[0] || 'there'
+
   return (
-    <main 
+    <main
       className="min-h-screen bg-cover bg-center flex items-center justify-center relative font-['Inter']"
       style={{ backgroundImage: `url('/signupbackground.jpg')` }}
     >
-      {/* Overlay for Readability */}
+      {/* Overlay */}
       <div className="absolute inset-0 bg-black/30"></div>
 
       <div className="relative z-10 w-full h-screen flex items-center justify-center p-4 animate-signup-fade-in">
-        <section className="w-full max-w-lg md:max-w-xl bg-white/80 backdrop-blur-lg rounded-2xl shadow-xl p-6 border border-white/30 max-h-[95vh] flex flex-col overflow-y-auto sm:overflow-y-auto md:overflow-hidden">
-          <div className="text-center">
-            <h1 className="text-xl md:text-2xl font-semibold text-[#111827]">Employee Onboarding</h1>
-            <p className="mt-1 text-sm text-[#6b7280]">Step 1 of 3: Basic profile setup</p>
+        <section className="w-full max-w-lg md:max-w-xl bg-white/80 backdrop-blur-lg rounded-2xl shadow-xl p-6 border border-white/30 max-h-[95vh] flex flex-col overflow-y-auto">
+
+          {/* Header */}
+          <div className="text-center mb-1">
+            <h1 className="text-xl md:text-2xl font-semibold text-[#111827]">
+              {loadingProfile ? 'Welcome!' : `Welcome, ${displayName.split(' ')[0]} 👋`}
+            </h1>
           </div>
-          
-          <div className="mt-3 flex justify-center">
-            <div className="h-1.5 w-full max-w-xs rounded-full bg-[#e5e7eb]">
-              <div className="h-1.5 w-1/3 rounded-full bg-[#2563eb]" />
+
+          {/* Progress */}
+          <div className="mt-3">
+            <p className="text-sm text-[#6b7280] text-center mb-2">
+              Profile Completion: <span className="font-semibold text-[#2563eb]">{completion}%</span>
+            </p>
+            <div className="w-full bg-[#e5e7eb] rounded-full h-2">
+              <div
+                className="bg-[#2563eb] h-2 rounded-full transition-all duration-300"
+                style={{ width: `${completion}%` }}
+              />
             </div>
           </div>
 
           <form className="mt-5 space-y-3" onSubmit={handleSubmit}>
-          <div className="flex flex-col items-center gap-3">
-            <div className="h-20 w-20 overflow-hidden rounded-full border border-[#d1d5db] bg-[#f3f4f6]">
-              {photoPreview ? (
-                <img src={photoPreview} alt="Profile preview" className="h-full w-full object-cover" />
-              ) : (
-                <div className="flex h-full w-full items-center justify-center text-xs text-[#6b7280]">
-                  No Photo
-                </div>
-              )}
-            </div>
-            <label className="cursor-pointer rounded-lg border border-[#d1d5db] px-3 py-2 text-sm font-medium text-[#374151] hover:bg-[#f9fafb]">
-              Upload Photo
-              <input type="file" accept="image/*" className="hidden" onChange={handlePhotoChange} />
-            </label>
-            {photoFile && <p className="text-xs text-[#6b7280]">{photoFile.name}</p>}
-          </div>
 
-          <div>
-            <label className="block text-sm text-[#374151] mb-1">Name</label>
-            <div className="relative">
+            {/* Resume Upload */}
+            <div>
+              <label className="block text-sm font-medium text-[#111827] mb-1">
+                Resume <span className="text-red-500">*</span>
+              </label>
               <input
-                ref={setFieldRef('name')}
-                className={`w-full rounded-lg border px-3 py-2.5 pr-10 text-sm outline-none ${
-                  editableFields.name
-                    ? 'border-[#2563eb] bg-white text-[#111827]'
-                    : 'border-[#d1d5db] bg-[#f3f4f6] text-[#6b7280]'
-                }`}
-                value={profile.name}
-                onChange={handleChange('name')}
-                onBlur={handleNameBlur}
-                placeholder="Enter your full name"
-                disabled={!editableFields.name}
+                type="file"
+                accept=".pdf,.doc,.docx"
+                className="w-full rounded-lg border border-[#d1d5db] bg-white px-3 py-2 text-sm text-[#374151] outline-none file:mr-3 file:rounded file:border-0 file:bg-[#eff6ff] file:px-3 file:py-1 file:text-sm file:font-medium file:text-[#2563eb] hover:file:bg-[#dbeafe] cursor-pointer"
+                onChange={handleResumeChange}
               />
-              <button
-                type="button"
-                onClick={() => enableEdit('name')}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-[#9ca3af] hover:text-[#2563eb]"
-                aria-label="Edit name"
-              >
-                <Pencil size={16} />
-              </button>
+              <p className="text-xs text-[#6b7280] mt-1">
+                {resumeFile ? `Selected: ${resumeFile.name}` : 'PDF, DOC, DOCX · Max 2 MB'}
+              </p>
             </div>
-          </div>
 
-          <div>
-            <label className="block text-sm text-[#374151] mb-1">Email</label>
-            <div className="relative">
+            {/* Name */}
+            <div>
+              <label className="block text-sm font-medium text-[#374151] mb-1">
+                Name <span className="text-red-500">*</span>
+              </label>
+              <div className="relative">
+                <input
+                  ref={setFieldRef('name')}
+                  className={`w-full rounded-lg border px-3 py-2.5 pr-10 text-sm outline-none ${
+                    editableFields.name
+                      ? 'border-[#2563eb] bg-white text-[#111827]'
+                      : 'border-[#d1d5db] bg-[#f3f4f6] text-[#6b7280]'
+                  } ${fieldErrors.name ? 'border-[#ef4444]' : ''}`}
+                  value={profile.name}
+                  onChange={handleChange('name')}
+                  onBlur={handleNameBlur}
+                  placeholder="Enter your full name"
+                  disabled={!editableFields.name}
+                />
+                <button
+                  type="button"
+                  onClick={() => enableEdit('name')}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-[#9ca3af] hover:text-[#2563eb]"
+                  aria-label="Edit name"
+                >
+                  <Pencil size={16} />
+                </button>
+              </div>
+              {fieldErrors.name && <p className="mt-1 text-sm text-[#b42318]">{fieldErrors.name}</p>}
+            </div>
+
+            {/* Email — permanently disabled, no edit */}
+            <div>
+              <label className="block text-sm font-medium text-[#374151] mb-1">Email</label>
               <input
-                ref={setFieldRef('email')}
-                className={`w-full rounded-lg border px-3 py-2.5 pr-10 text-sm outline-none ${
-                  editableFields.email
-                    ? 'border-[#2563eb] bg-white text-[#111827]'
-                    : 'border-[#d1d5db] bg-[#f3f4f6] text-[#6b7280]'
-                }`}
+                className="w-full rounded-lg border border-[#d1d5db] bg-[#f3f4f6] px-3 py-2.5 text-sm text-[#6b7280] outline-none cursor-not-allowed"
                 value={profile.email}
-                onChange={handleChange('email')}
-                placeholder="Enter your email"
-                disabled={!editableFields.email}
-              />
-              <button
-                type="button"
-                onClick={() => enableEdit('email')}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-[#9ca3af] hover:text-[#2563eb]"
-                aria-label="Edit email"
-              >
-                <Pencil size={16} />
-              </button>
-            </div>
-          </div>
-
-          <div>
-            <label className="block text-sm text-[#374151] mb-1">Phone</label>
-            <div className="relative">
-              <input
-                ref={setFieldRef('phone')}
-                className="w-full rounded-lg border border-[#d1d5db] bg-[#f3f4f6] px-3 py-2.5 pr-10 text-sm text-[#6b7280] outline-none"
-                value={profile.phone}
-                onChange={handleChange('phone')}
-                placeholder="+91XXXXXXXXXX"
+                placeholder="Email"
                 disabled
+                readOnly
               />
-              <button
-                type="button"
-                onClick={() => navigate('/verify-otp?next=/employee/onboarding')}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-[#9ca3af] hover:text-[#2563eb]"
-                aria-label="Verify phone number"
-                title="Verify phone number"
-              >
-                <Pencil size={16} />
-              </button>
             </div>
-          </div>
 
-          <div>
-            <label className="block text-sm text-[#111827] mb-1">Country</label>
-            <input
-              ref={setFieldRef('country')}
-              className={`w-full rounded-lg border bg-white px-3 py-2.5 text-sm text-[#111827] outline-none focus:border-[#2563eb] ${fieldErrors.country ? 'border-[#ef4444]' : 'border-[#d1d5db]'}`}
-              value={profile.country}
-              onChange={handleChange('country')}
-              placeholder="Enter your country"
-            />
-            {fieldErrors.country && <p className="mt-1 text-sm text-[#b42318]">{fieldErrors.country}</p>}
-          </div>
+            {/* Phone */}
+            <div>
+              <label className="block text-sm font-medium text-[#374151] mb-1">
+                Phone <span className="text-red-500">*</span>
+              </label>
+              <div className="relative">
+                <input
+                  ref={setFieldRef('phone')}
+                  className="w-full rounded-lg border border-[#d1d5db] bg-[#f3f4f6] px-3 py-2.5 pr-10 text-sm text-[#6b7280] outline-none"
+                  value={profile.phone}
+                  onChange={handleChange('phone')}
+                  placeholder="+91XXXXXXXXXX"
+                  disabled
+                />
+                <button
+                  type="button"
+                  onClick={() => navigate('/verify-otp?next=/employee/onboarding')}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-[#9ca3af] hover:text-[#2563eb]"
+                  aria-label="Verify phone number"
+                  title="Verify phone number"
+                >
+                  <Pencil size={16} />
+                </button>
+              </div>
+            </div>
 
-          <div>
-            <label className="block text-sm text-[#111827] mb-1">City</label>
-            <input
-              ref={setFieldRef('city')}
-              className={`w-full rounded-lg border bg-white px-3 py-2.5 text-sm text-[#111827] outline-none focus:border-[#2563eb] ${fieldErrors.city ? 'border-[#ef4444]' : 'border-[#d1d5db]'}`}
-              value={profile.city}
-              onChange={handleChange('city')}
-              placeholder="Enter your city"
-            />
-            {fieldErrors.city && <p className="mt-1 text-sm text-[#b42318]">{fieldErrors.city}</p>}
-          </div>
+            {/* Country + City side by side */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div>
+                <label className="block text-sm font-medium text-[#111827] mb-1">
+                  Country <span className="text-red-500">*</span>
+                </label>
+                <input
+                  ref={setFieldRef('country')}
+                  className={`w-full rounded-lg border bg-white px-3 py-2.5 text-sm text-[#111827] outline-none focus:border-[#2563eb] ${fieldErrors.country ? 'border-[#ef4444]' : 'border-[#d1d5db]'}`}
+                  value={profile.country}
+                  onChange={handleChange('country')}
+                  placeholder="Country"
+                />
+                {fieldErrors.country && <p className="mt-1 text-sm text-[#b42318]">{fieldErrors.country}</p>}
+              </div>
 
-          <div>
-            <label className="block text-sm text-[#111827] mb-1">Qualification</label>
-            <input
-              ref={setFieldRef('qualification')}
-              className={`w-full rounded-lg border bg-white px-3 py-2.5 text-sm text-[#111827] outline-none focus:border-[#2563eb] ${fieldErrors.qualification ? 'border-[#ef4444]' : 'border-[#d1d5db]'}`}
-              value={profile.qualification}
-              onChange={handleChange('qualification')}
-              placeholder="e.g. B.Tech, MBA"
-            />
-            {fieldErrors.qualification && <p className="mt-1 text-sm text-[#b42318]">{fieldErrors.qualification}</p>}
-          </div>
+              <div>
+                <label className="block text-sm font-medium text-[#111827] mb-1">
+                  City <span className="text-red-500">*</span>
+                </label>
+                <input
+                  ref={setFieldRef('city')}
+                  className={`w-full rounded-lg border bg-white px-3 py-2.5 text-sm text-[#111827] outline-none focus:border-[#2563eb] ${fieldErrors.city ? 'border-[#ef4444]' : 'border-[#d1d5db]'}`}
+                  value={profile.city}
+                  onChange={handleChange('city')}
+                  placeholder="City"
+                />
+                {fieldErrors.city && <p className="mt-1 text-sm text-[#b42318]">{fieldErrors.city}</p>}
+              </div>
+            </div>
 
-          <div>
-            <label className="block text-sm text-[#111827] mb-1">Company Name</label>
-            <input
-              ref={setFieldRef('companyName')}
-              className={`w-full rounded-lg border bg-white px-3 py-2.5 text-sm text-[#111827] outline-none focus:border-[#2563eb] ${fieldErrors.companyName ? 'border-[#ef4444]' : 'border-[#d1d5db]'}`}
-              value={profile.companyName}
-              onChange={handleChange('companyName')}
-              placeholder="Enter company name"
-            />
-            {fieldErrors.companyName && <p className="mt-1 text-sm text-[#b42318]">{fieldErrors.companyName}</p>}
-          </div>
+            {/* Qualification */}
+            <div>
+              <label className="block text-sm font-medium text-[#111827] mb-1">
+                Qualification <span className="text-red-500">*</span>
+              </label>
+              <input
+                ref={setFieldRef('qualification')}
+                className={`w-full rounded-lg border bg-white px-3 py-2.5 text-sm text-[#111827] outline-none focus:border-[#2563eb] ${fieldErrors.qualification ? 'border-[#ef4444]' : 'border-[#d1d5db]'}`}
+                value={profile.qualification}
+                onChange={handleChange('qualification')}
+                placeholder="e.g. B.Tech, MBA"
+              />
+              {fieldErrors.qualification && <p className="mt-1 text-sm text-[#b42318]">{fieldErrors.qualification}</p>}
+            </div>
 
-          {error && (
-            <p className="text-sm text-[#b42318]">{error}</p>
-          )}
+            {/* Company Name */}
+            <div>
+              <label className="block text-sm font-medium text-[#111827] mb-1">
+                Company Name <span className="text-red-500">*</span>
+              </label>
+              <input
+                ref={setFieldRef('companyName')}
+                className={`w-full rounded-lg border bg-white px-3 py-2.5 text-sm text-[#111827] outline-none focus:border-[#2563eb] ${fieldErrors.companyName ? 'border-[#ef4444]' : 'border-[#d1d5db]'}`}
+                value={profile.companyName}
+                onChange={handleChange('companyName')}
+                placeholder="Enter company name"
+              />
+              {fieldErrors.companyName && <p className="mt-1 text-sm text-[#b42318]">{fieldErrors.companyName}</p>}
+            </div>
 
-          <button
-            type="submit"
-            disabled={isContinueDisabled}
-            className="w-full rounded-lg bg-[#2563eb] px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-[#1d4ed8] disabled:cursor-not-allowed disabled:bg-[#9ca3af]"
-          >
-            {submitting ? (
-              <span className="inline-flex items-center gap-2">
-                <Loader2 size={16} className="animate-spin" />
-                Saving...
-              </span>
-            ) : loadingProfile ? 'Loading...' : 'Save & Continue'}
-          </button>
-        </form>
-      </section>
+
+
+            {error && (
+              <p className="text-sm text-[#b42318]">{error}</p>
+            )}
+
+            <button
+              type="submit"
+              disabled={isContinueDisabled}
+              className="w-full rounded-lg bg-[#2563eb] px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-[#1d4ed8] disabled:cursor-not-allowed disabled:bg-[#9ca3af]"
+            >
+              {submitting ? (
+                <span className="inline-flex items-center gap-2">
+                  <Loader2 size={16} className="animate-spin" />
+                  Saving...
+                </span>
+              ) : loadingProfile ? 'Loading...' : 'Save & Continue'}
+            </button>
+          </form>
+        </section>
       </div>
     </main>
   )
