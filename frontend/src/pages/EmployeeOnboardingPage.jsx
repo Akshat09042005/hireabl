@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Loader2, Pencil } from 'lucide-react'
+import { Loader2, Pencil, X } from 'lucide-react'
 import { useAuth } from '../context/AuthContext'
 import { getErrorMessage } from '../utils/apiError'
 
@@ -12,7 +12,6 @@ function EmployeeOnboardingPage() {
 
   useEffect(() => {
     if (!authUser) return
-    console.log('User Role:', authUser.role)
     if (authUser.role !== 'employee') {
       navigate('/employer/onboarding', { replace: true })
     }
@@ -24,30 +23,22 @@ function EmployeeOnboardingPage() {
     phone: '',
     country: '',
     city: '',
-    qualification: '',
-    companyName: '',
     profilePhoto: '',
   })
   const [resumeFile, setResumeFile] = useState(null)
+  const [isDragOver, setIsDragOver] = useState(false)
   const [loadingProfile, setLoadingProfile] = useState(true)
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState('')
   const [fieldErrors, setFieldErrors] = useState({})
   const fieldRefs = useRef({})
-  const [editableFields, setEditableFields] = useState({
-    name: false,
-    phone: false,
-  })
+  const [editableName, setEditableName] = useState(false)
+
+  // Phone confirmation modal
+  const [showPhoneModal, setShowPhoneModal] = useState(false)
 
   const setFieldRef = (field) => (el) => {
     fieldRefs.current[field] = el
-  }
-
-  const enableEdit = (field) => {
-    setEditableFields((prev) => ({
-      ...prev,
-      [field]: true,
-    }))
   }
 
   useEffect(() => {
@@ -58,17 +49,13 @@ function EmployeeOnboardingPage() {
         setLoadingProfile(true)
         setError('')
         const res = await fetch(`${BACKEND_URL}/api/v1/user/me`, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
+          headers: { Authorization: `Bearer ${token}` },
         })
         if (!res.ok) {
           const msg = await getErrorMessage(res, 'Failed to load profile')
           throw new Error(msg)
         }
         const data = await res.json()
-        console.log('User Data:', data)
-
         const dbUser = data?.data?.user || {}
         if (!cancelled) {
           setProfile({
@@ -77,19 +64,13 @@ function EmployeeOnboardingPage() {
             phone: dbUser.phone || '',
             country: dbUser.country || '',
             city: dbUser.city || '',
-            qualification: dbUser.qualification || '',
-            companyName: dbUser.companyName || '',
             profilePhoto: dbUser.profilePhoto || '',
           })
         }
       } catch (err) {
-        if (!cancelled) {
-          setError(err.message || 'Failed to load profile')
-        }
+        if (!cancelled) setError(err.message || 'Failed to load profile')
       } finally {
-        if (!cancelled) {
-          setLoadingProfile(false)
-        }
+        if (!cancelled) setLoadingProfile(false)
       }
     }
 
@@ -99,14 +80,12 @@ function EmployeeOnboardingPage() {
       setLoadingProfile(false)
     }
 
-    return () => {
-      cancelled = true
-    }
+    return () => { cancelled = true }
   }, [token, authUser?.email])
 
   useEffect(() => {
     if (loadingProfile) return
-    const focusOrder = ['country', 'city', 'qualification', 'companyName']
+    const focusOrder = ['country', 'city']
     const firstEmpty = focusOrder.find((key) => !String(profile[key] || '').trim())
     if (firstEmpty && fieldRefs.current[firstEmpty]) {
       fieldRefs.current[firstEmpty].focus()
@@ -114,15 +93,20 @@ function EmployeeOnboardingPage() {
   }, [loadingProfile, profile])
 
   useEffect(() => {
-    if (editableFields.name) fieldRefs.current.name?.focus()
-  }, [editableFields.name])
+    if (editableName) fieldRefs.current.name?.focus()
+  }, [editableName])
 
-  // Profile completion calculation
-  const { completion, filledFields } = useMemo(() => {
-    const fields = [profile.name, profile.phone, profile.country, profile.city, profile.qualification, profile.companyName]
-    const filled = fields.filter((f) => String(f || '').trim()).length
-    return { completion: Math.round((filled / fields.length) * 100), filledFields: filled }
-  }, [profile.name, profile.phone, profile.country, profile.city, profile.qualification, profile.companyName])
+  // Step 1 progress: each filled field contributes equally, up to 50% of total
+  const completion = useMemo(() => {
+    const step1Fields = [
+      String(profile.name || '').trim(),
+      String(profile.phone || '').trim(),
+      String(profile.country || '').trim(),
+      String(profile.city || '').trim(),
+      resumeFile,
+    ]
+    return Math.round((step1Fields.filter(Boolean).length / step1Fields.length) * 50)
+  }, [profile.name, profile.phone, profile.country, profile.city, resumeFile])
 
   const isContinueDisabled = useMemo(
     () => (
@@ -132,10 +116,9 @@ function EmployeeOnboardingPage() {
       !profile.phone.trim() ||
       !profile.country.trim() ||
       !profile.city.trim() ||
-      !profile.qualification.trim() ||
-      !profile.companyName.trim()
+      !resumeFile
     ),
-    [submitting, loadingProfile, profile.name, profile.phone, profile.country, profile.city, profile.qualification, profile.companyName],
+    [submitting, loadingProfile, profile.name, profile.phone, profile.country, profile.city, resumeFile],
   )
 
   const handleChange = (field) => (e) => {
@@ -147,12 +130,9 @@ function EmployeeOnboardingPage() {
     }
   }
 
-  const toTitleCase = (value) => value
-    .toLowerCase()
-    .split(' ')
-    .filter(Boolean)
-    .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
-    .join(' ')
+  const toTitleCase = (value) =>
+    value.toLowerCase().split(' ').filter(Boolean)
+      .map((p) => p.charAt(0).toUpperCase() + p.slice(1)).join(' ')
 
   const handleNameBlur = () => {
     const formatted = toTitleCase(profile.name.trim())
@@ -161,10 +141,13 @@ function EmployeeOnboardingPage() {
     }
   }
 
-  const handleResumeChange = (e) => {
-    const file = e.target.files?.[0]
+  const validateAndSetResume = (file) => {
     if (!file) return
-    const allowed = ['application/pdf', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document']
+    const allowed = [
+      'application/pdf',
+      'application/msword',
+      'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+    ]
     if (!allowed.includes(file.type)) {
       setError('Please upload a valid resume file (PDF, DOC, or DOCX)')
       return
@@ -177,6 +160,15 @@ function EmployeeOnboardingPage() {
     if (error) setError('')
   }
 
+  const handleResumeChange = (e) => validateAndSetResume(e.target.files?.[0])
+  const handleDragOver = (e) => { e.preventDefault(); setIsDragOver(true) }
+  const handleDragLeave = () => setIsDragOver(false)
+  const handleDrop = (e) => {
+    e.preventDefault()
+    setIsDragOver(false)
+    validateAndSetResume(e.dataTransfer.files?.[0])
+  }
+
   const handleSubmit = async (e) => {
     e.preventDefault()
     const payload = {
@@ -185,21 +177,18 @@ function EmployeeOnboardingPage() {
       phone: profile.phone.trim(),
       country: profile.country.trim(),
       city: profile.city.trim(),
-      qualification: profile.qualification.trim(),
-      companyName: profile.companyName.trim(),
     }
 
     const nextFieldErrors = {}
-    if (!payload.name) nextFieldErrors.name = 'Name is required'
+    if (!payload.name)    nextFieldErrors.name = 'Name is required'
+    if (!payload.phone)   nextFieldErrors.phone = 'Phone is required'
     if (!payload.country) nextFieldErrors.country = 'Country is required'
-    if (!payload.city) nextFieldErrors.city = 'City is required'
-    if (!payload.qualification) nextFieldErrors.qualification = 'Qualification is required'
-    if (!payload.companyName) nextFieldErrors.companyName = 'Company name is required'
+    if (!payload.city)    nextFieldErrors.city = 'City is required'
+    if (!resumeFile)      nextFieldErrors.resume = 'Resume is required'
 
     if (Object.keys(nextFieldErrors).length > 0) {
       setFieldErrors(nextFieldErrors)
-      const firstErrorField = ['name', 'country', 'city', 'qualification', 'companyName']
-        .find((key) => nextFieldErrors[key])
+      const firstErrorField = ['name', 'phone', 'country', 'city', 'resume'].find((k) => nextFieldErrors[k])
       if (firstErrorField && fieldRefs.current[firstErrorField]) {
         fieldRefs.current[firstErrorField].scrollIntoView({ behavior: 'smooth', block: 'center' })
         fieldRefs.current[firstErrorField].focus()
@@ -217,16 +206,19 @@ function EmployeeOnboardingPage() {
           'Content-Type': 'application/json',
           Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify({
-          ...payload,
-          profilePhoto: profile.profilePhoto || '',
-        }),
+        body: JSON.stringify({ ...payload, profilePhoto: profile.profilePhoto || '' }),
       })
       if (!res.ok) {
         const msg = await getErrorMessage(res, 'Request failed')
         throw new Error(msg)
       }
-
+      // Persist Step 1 data before navigating
+      localStorage.setItem('step1Data', JSON.stringify({
+        name: payload.name,
+        phone: payload.phone,
+        country: payload.country,
+        city: payload.city,
+      }))
       navigate('/employee/professional')
     } catch (err) {
       setError(err.message || 'Failed to save profile')
@@ -243,7 +235,40 @@ function EmployeeOnboardingPage() {
       style={{ backgroundImage: `url('/signupbackground.jpg')` }}
     >
       {/* Overlay */}
-      <div className="absolute inset-0 bg-black/30"></div>
+      <div className="absolute inset-0 bg-black/30" />
+
+      {/* Phone Confirmation Modal */}
+      {showPhoneModal && (
+        <div className="absolute inset-0 z-50 flex items-center justify-center p-4">
+          <div className="absolute inset-0 bg-black/50" onClick={() => setShowPhoneModal(false)} />
+          <div className="relative z-10 w-full max-w-sm bg-white rounded-2xl shadow-2xl p-6">
+            <button
+              onClick={() => setShowPhoneModal(false)}
+              className="absolute top-4 right-4 text-[#9ca3af] hover:text-[#374151]"
+            >
+              <X size={18} />
+            </button>
+            <h2 className="text-lg font-semibold text-[#111827] mb-2">Verification Required</h2>
+            <p className="text-sm text-[#6b7280] mb-6">
+              Changing this field requires re-verification. You will be redirected to verification.
+            </p>
+            <div className="flex gap-3">
+              <button
+                onClick={() => setShowPhoneModal(false)}
+                className="flex-1 rounded-lg border border-[#d1d5db] px-4 py-2 text-sm font-medium text-[#374151] hover:bg-[#f9fafb] transition"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={() => navigate('/verify-otp?next=/employee/onboarding')}
+                className="flex-1 rounded-lg bg-[#2563eb] px-4 py-2 text-sm font-semibold text-white hover:bg-[#1d4ed8] transition"
+              >
+                Continue
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       <div className="relative z-10 w-full h-screen flex items-center justify-center p-4 animate-signup-fade-in">
         <section className="w-full max-w-lg md:max-w-xl bg-white/80 backdrop-blur-lg rounded-2xl shadow-xl p-6 border border-white/30 max-h-[95vh] flex flex-col overflow-y-auto">
@@ -253,6 +278,7 @@ function EmployeeOnboardingPage() {
             <h1 className="text-xl md:text-2xl font-semibold text-[#111827]">
               {loadingProfile ? 'Welcome!' : `Welcome, ${displayName.split(' ')[0]} 👋`}
             </h1>
+            <p className="text-xs text-[#9ca3af] mt-0.5">Step 1 of 2 · Basic Info</p>
           </div>
 
           {/* Progress */}
@@ -270,20 +296,38 @@ function EmployeeOnboardingPage() {
 
           <form className="mt-5 space-y-3" onSubmit={handleSubmit}>
 
-            {/* Resume Upload */}
+            {/* Resume Upload — drag & drop */}
             <div>
               <label className="block text-sm font-medium text-[#111827] mb-1">
                 Resume <span className="text-red-500">*</span>
               </label>
-              <input
-                type="file"
-                accept=".pdf,.doc,.docx"
-                className="w-full rounded-lg border border-[#d1d5db] bg-white px-3 py-2 text-sm text-[#374151] outline-none file:mr-3 file:rounded file:border-0 file:bg-[#eff6ff] file:px-3 file:py-1 file:text-sm file:font-medium file:text-[#2563eb] hover:file:bg-[#dbeafe] cursor-pointer"
-                onChange={handleResumeChange}
-              />
-              <p className="text-xs text-[#6b7280] mt-1">
-                {resumeFile ? `Selected: ${resumeFile.name}` : 'PDF, DOC, DOCX · Max 2 MB'}
-              </p>
+              <label
+                className={`flex flex-col items-center justify-center w-full rounded-lg border-2 border-dashed px-4 py-4 cursor-pointer transition-colors duration-200 ${
+                  isDragOver
+                    ? 'border-[#2563eb] bg-[#eff6ff]'
+                    : resumeFile
+                    ? 'border-[#2563eb] bg-[#f0fdf4]'
+                    : 'border-[#d1d5db] bg-white hover:border-[#2563eb] hover:bg-[#f8faff]'
+                }`}
+                onDragOver={handleDragOver}
+                onDragLeave={handleDragLeave}
+                onDrop={handleDrop}
+              >
+                {resumeFile ? (
+                  <>
+                    <span className="text-2xl mb-1">📄</span>
+                    <p className="text-sm font-medium text-[#2563eb] truncate max-w-full">{resumeFile.name}</p>
+                    <p className="text-xs text-[#6b7280] mt-0.5">{(resumeFile.size / 1024).toFixed(1)} KB · Click to replace</p>
+                  </>
+                ) : (
+                  <>
+                    <span className="text-2xl mb-1">📂</span>
+                    <p className="text-sm font-medium text-[#374151]">Drag & drop your resume here</p>
+                    <p className="text-xs text-[#6b7280] mt-0.5">or <span className="text-[#2563eb] underline">browse files</span> · PDF, DOC, DOCX · Max 2 MB</p>
+                  </>
+                )}
+                <input type="file" accept=".pdf,.doc,.docx" className="hidden" onChange={handleResumeChange} />
+              </label>
             </div>
 
             {/* Name */}
@@ -295,19 +339,19 @@ function EmployeeOnboardingPage() {
                 <input
                   ref={setFieldRef('name')}
                   className={`w-full rounded-lg border px-3 py-2.5 pr-10 text-sm outline-none ${
-                    editableFields.name
+                    editableName
                       ? 'border-[#2563eb] bg-white text-[#111827]'
                       : 'border-[#d1d5db] bg-[#f3f4f6] text-[#6b7280]'
-                  } ${fieldErrors.name ? 'border-[#ef4444]' : ''}`}
+                  } ${fieldErrors.name ? '!border-[#ef4444]' : ''}`}
                   value={profile.name}
                   onChange={handleChange('name')}
                   onBlur={handleNameBlur}
                   placeholder="Enter your full name"
-                  disabled={!editableFields.name}
+                  disabled={!editableName}
                 />
                 <button
                   type="button"
-                  onClick={() => enableEdit('name')}
+                  onClick={() => setEditableName(true)}
                   className="absolute right-3 top-1/2 -translate-y-1/2 text-[#9ca3af] hover:text-[#2563eb]"
                   aria-label="Edit name"
                 >
@@ -317,7 +361,7 @@ function EmployeeOnboardingPage() {
               {fieldErrors.name && <p className="mt-1 text-sm text-[#b42318]">{fieldErrors.name}</p>}
             </div>
 
-            {/* Email — permanently disabled, no edit */}
+            {/* Email — permanently locked */}
             <div>
               <label className="block text-sm font-medium text-[#374151] mb-1">Email</label>
               <input
@@ -329,26 +373,25 @@ function EmployeeOnboardingPage() {
               />
             </div>
 
-            {/* Phone */}
+            {/* Phone — modal on pencil click */}
             <div>
               <label className="block text-sm font-medium text-[#374151] mb-1">
                 Phone <span className="text-red-500">*</span>
               </label>
               <div className="relative">
                 <input
-                  ref={setFieldRef('phone')}
                   className="w-full rounded-lg border border-[#d1d5db] bg-[#f3f4f6] px-3 py-2.5 pr-10 text-sm text-[#6b7280] outline-none"
                   value={profile.phone}
-                  onChange={handleChange('phone')}
                   placeholder="+91XXXXXXXXXX"
                   disabled
+                  readOnly
                 />
                 <button
                   type="button"
-                  onClick={() => navigate('/verify-otp?next=/employee/onboarding')}
+                  onClick={() => setShowPhoneModal(true)}
                   className="absolute right-3 top-1/2 -translate-y-1/2 text-[#9ca3af] hover:text-[#2563eb]"
-                  aria-label="Verify phone number"
-                  title="Verify phone number"
+                  aria-label="Change phone number"
+                  title="Change phone number"
                 >
                   <Pencil size={16} />
                 </button>
@@ -386,41 +429,7 @@ function EmployeeOnboardingPage() {
               </div>
             </div>
 
-            {/* Qualification */}
-            <div>
-              <label className="block text-sm font-medium text-[#111827] mb-1">
-                Qualification <span className="text-red-500">*</span>
-              </label>
-              <input
-                ref={setFieldRef('qualification')}
-                className={`w-full rounded-lg border bg-white px-3 py-2.5 text-sm text-[#111827] outline-none focus:border-[#2563eb] ${fieldErrors.qualification ? 'border-[#ef4444]' : 'border-[#d1d5db]'}`}
-                value={profile.qualification}
-                onChange={handleChange('qualification')}
-                placeholder="e.g. B.Tech, MBA"
-              />
-              {fieldErrors.qualification && <p className="mt-1 text-sm text-[#b42318]">{fieldErrors.qualification}</p>}
-            </div>
-
-            {/* Company Name */}
-            <div>
-              <label className="block text-sm font-medium text-[#111827] mb-1">
-                Company Name <span className="text-red-500">*</span>
-              </label>
-              <input
-                ref={setFieldRef('companyName')}
-                className={`w-full rounded-lg border bg-white px-3 py-2.5 text-sm text-[#111827] outline-none focus:border-[#2563eb] ${fieldErrors.companyName ? 'border-[#ef4444]' : 'border-[#d1d5db]'}`}
-                value={profile.companyName}
-                onChange={handleChange('companyName')}
-                placeholder="Enter company name"
-              />
-              {fieldErrors.companyName && <p className="mt-1 text-sm text-[#b42318]">{fieldErrors.companyName}</p>}
-            </div>
-
-
-
-            {error && (
-              <p className="text-sm text-[#b42318]">{error}</p>
-            )}
+            {error && <p className="text-sm text-[#b42318]">{error}</p>}
 
             <button
               type="submit"
@@ -432,7 +441,7 @@ function EmployeeOnboardingPage() {
                   <Loader2 size={16} className="animate-spin" />
                   Saving...
                 </span>
-              ) : loadingProfile ? 'Loading...' : 'Save & Continue'}
+              ) : loadingProfile ? 'Loading...' : 'Save & Continue →'}
             </button>
           </form>
         </section>
