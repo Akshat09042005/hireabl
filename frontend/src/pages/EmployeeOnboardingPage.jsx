@@ -34,7 +34,6 @@ function EmployeeOnboardingPage() {
   const fieldRefs = useRef({})
   const [editableName, setEditableName] = useState(false)
 
-  // Phone confirmation modal
   const [showPhoneModal, setShowPhoneModal] = useState(false)
 
   const setFieldRef = (field) => (el) => {
@@ -90,13 +89,12 @@ function EmployeeOnboardingPage() {
     if (firstEmpty && fieldRefs.current[firstEmpty]) {
       fieldRefs.current[firstEmpty].focus()
     }
-  }, [loadingProfile, profile])
+  }, [loadingProfile])
 
   useEffect(() => {
     if (editableName) fieldRefs.current.name?.focus()
   }, [editableName])
 
-  // Step 1 progress: each filled field contributes equally, up to 50% of total
   const completion = useMemo(() => {
     const step1Fields = [
       String(profile.name || '').trim(),
@@ -105,7 +103,7 @@ function EmployeeOnboardingPage() {
       String(profile.city || '').trim(),
       resumeFile,
     ]
-    return Math.round((step1Fields.filter(Boolean).length / step1Fields.length) * 50)
+    return Math.round((step1Fields.filter(Boolean).length / step1Fields.length) * 33)
   }, [profile.name, profile.phone, profile.country, profile.city, resumeFile])
 
   const isContinueDisabled = useMemo(
@@ -212,7 +210,6 @@ function EmployeeOnboardingPage() {
         const msg = await getErrorMessage(res, 'Request failed')
         throw new Error(msg)
       }
-      // Persist Step 1 data before navigating
       localStorage.setItem('step1Data', JSON.stringify({
         name: payload.name,
         phone: payload.phone,
@@ -230,18 +227,16 @@ function EmployeeOnboardingPage() {
   const displayName = profile.name || authUser?.name || authUser?.email?.split('@')[0] || 'there'
 
   return (
-    <main
-      className="min-h-screen bg-cover bg-center flex items-center justify-center relative font-['Inter']"
-      style={{ backgroundImage: `url('/signupbackground.jpg')` }}
-    >
-      {/* Overlay */}
-      <div className="absolute inset-0 bg-black/30" />
+    <div className="min-h-screen bg-[#f6f8fb] font-['Inter']">
+      {/* Top Header Strip */}
+      <header className="w-full bg-white border-b border-[#e5e7eb] h-20 flex items-center justify-between px-10">
+        <img src="/logo.jpg" alt="Hireabl" className="h-12 w-auto object-contain rounded" />
+      </header>
 
       {/* Phone Confirmation Modal */}
       {showPhoneModal && (
-        <div className="absolute inset-0 z-50 flex items-center justify-center p-4">
-          <div className="absolute inset-0 bg-black/50" onClick={() => setShowPhoneModal(false)} />
-          <div className="relative z-10 w-full max-w-sm bg-white rounded-2xl shadow-2xl p-6">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40">
+          <div className="relative w-full max-w-sm bg-white rounded-2xl shadow-2xl p-6">
             <button
               onClick={() => setShowPhoneModal(false)}
               className="absolute top-4 right-4 text-[#9ca3af] hover:text-[#374151]"
@@ -270,44 +265,47 @@ function EmployeeOnboardingPage() {
         </div>
       )}
 
-      <div className="relative z-10 w-full h-screen flex items-center justify-center p-4 animate-signup-fade-in">
-        <section className="w-full max-w-lg md:max-w-xl bg-white/80 backdrop-blur-lg rounded-2xl shadow-xl p-6 border border-white/30 max-h-[95vh] flex flex-col overflow-y-auto">
+      {/* Page content */}
+      <main className="flex items-start justify-center min-h-[calc(100vh-80px)] py-8 px-4">
+        <section className="w-full max-w-lg bg-white rounded-xl shadow-md p-6 md:p-8">
 
-          {/* Header */}
+          {/* Step indicator */}
           <div className="text-center mb-1">
             <h1 className="text-xl md:text-2xl font-semibold text-[#111827]">
               {loadingProfile ? 'Welcome!' : `Welcome, ${displayName.split(' ')[0]} 👋`}
             </h1>
-            <p className="text-xs text-[#9ca3af] mt-0.5">Step 1 of 2 · Basic Info</p>
+            <p className="text-xs text-[#9ca3af] mt-0.5">Step 1 of 4 · Basic Info</p>
           </div>
 
-          {/* Progress */}
-          <div className="mt-3">
-            <p className="text-sm text-[#6b7280] text-center mb-2">
-              Profile Completion: <span className="font-semibold text-[#2563eb]">{completion}%</span>
-            </p>
-            <div className="w-full bg-[#e5e7eb] rounded-full h-2">
+          {/* Progress bar */}
+          <div className="mt-4 mb-6">
+            <div className="flex justify-between text-xs text-[#6b7280] mb-1.5">
+              <span>Profile Completion</span>
+              <span className="font-semibold text-[#2563eb]">{completion}%</span>
+            </div>
+            <div className="w-full bg-[#e5e7eb] rounded-full h-1.5">
               <div
-                className="bg-[#2563eb] h-2 rounded-full transition-all duration-300"
+                className="bg-[#2563eb] h-1.5 rounded-full transition-all duration-300"
                 style={{ width: `${completion}%` }}
               />
             </div>
           </div>
 
-          <form className="mt-5 space-y-3" onSubmit={handleSubmit}>
+          <form className="space-y-4" onSubmit={handleSubmit}>
 
-            {/* Resume Upload — drag & drop */}
+            {/* Resume Upload */}
             <div>
               <label className="block text-sm font-medium text-[#111827] mb-1">
                 Resume <span className="text-red-500">*</span>
               </label>
               <label
+                ref={setFieldRef('resume')}
                 className={`flex flex-col items-center justify-center w-full rounded-lg border-2 border-dashed px-4 py-4 cursor-pointer transition-colors duration-200 ${
                   isDragOver
                     ? 'border-[#2563eb] bg-[#eff6ff]'
                     : resumeFile
                     ? 'border-[#2563eb] bg-[#f0fdf4]'
-                    : 'border-[#d1d5db] bg-white hover:border-[#2563eb] hover:bg-[#f8faff]'
+                    : 'border-[#d1d5db] bg-[#f9fafb] hover:border-[#2563eb] hover:bg-[#f8faff]'
                 }`}
                 onDragOver={handleDragOver}
                 onDragLeave={handleDragLeave}
@@ -328,6 +326,7 @@ function EmployeeOnboardingPage() {
                 )}
                 <input type="file" accept=".pdf,.doc,.docx" className="hidden" onChange={handleResumeChange} />
               </label>
+              {fieldErrors.resume && <p className="mt-1 text-sm text-[#b42318]">{fieldErrors.resume}</p>}
             </div>
 
             {/* Name */}
@@ -338,7 +337,7 @@ function EmployeeOnboardingPage() {
               <div className="relative">
                 <input
                   ref={setFieldRef('name')}
-                  className={`w-full rounded-lg border px-3 py-2.5 pr-10 text-sm outline-none ${
+                  className={`w-full rounded-lg border px-3 py-2.5 pr-10 text-sm outline-none transition-colors duration-200 ${
                     editableName
                       ? 'border-[#2563eb] bg-white text-[#111827]'
                       : 'border-[#d1d5db] bg-[#f3f4f6] text-[#6b7280]'
@@ -361,7 +360,7 @@ function EmployeeOnboardingPage() {
               {fieldErrors.name && <p className="mt-1 text-sm text-[#b42318]">{fieldErrors.name}</p>}
             </div>
 
-            {/* Email — permanently locked */}
+            {/* Email — locked */}
             <div>
               <label className="block text-sm font-medium text-[#374151] mb-1">Email</label>
               <input
@@ -373,7 +372,7 @@ function EmployeeOnboardingPage() {
               />
             </div>
 
-            {/* Phone — modal on pencil click */}
+            {/* Phone */}
             <div>
               <label className="block text-sm font-medium text-[#374151] mb-1">
                 Phone <span className="text-red-500">*</span>
@@ -391,14 +390,13 @@ function EmployeeOnboardingPage() {
                   onClick={() => setShowPhoneModal(true)}
                   className="absolute right-3 top-1/2 -translate-y-1/2 text-[#9ca3af] hover:text-[#2563eb]"
                   aria-label="Change phone number"
-                  title="Change phone number"
                 >
                   <Pencil size={16} />
                 </button>
               </div>
             </div>
 
-            {/* Country + City side by side */}
+            {/* Country + City */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div>
                 <label className="block text-sm font-medium text-[#111827] mb-1">
@@ -406,7 +404,7 @@ function EmployeeOnboardingPage() {
                 </label>
                 <input
                   ref={setFieldRef('country')}
-                  className={`w-full rounded-lg border bg-white px-3 py-2.5 text-sm text-[#111827] outline-none focus:border-[#2563eb] ${fieldErrors.country ? 'border-[#ef4444]' : 'border-[#d1d5db]'}`}
+                  className={`w-full rounded-lg border bg-white px-3 py-2.5 text-sm text-[#111827] outline-none focus:border-[#2563eb] transition-colors duration-200 ${fieldErrors.country ? 'border-[#ef4444]' : 'border-[#d1d5db]'}`}
                   value={profile.country}
                   onChange={handleChange('country')}
                   placeholder="Country"
@@ -420,7 +418,7 @@ function EmployeeOnboardingPage() {
                 </label>
                 <input
                   ref={setFieldRef('city')}
-                  className={`w-full rounded-lg border bg-white px-3 py-2.5 text-sm text-[#111827] outline-none focus:border-[#2563eb] ${fieldErrors.city ? 'border-[#ef4444]' : 'border-[#d1d5db]'}`}
+                  className={`w-full rounded-lg border bg-white px-3 py-2.5 text-sm text-[#111827] outline-none focus:border-[#2563eb] transition-colors duration-200 ${fieldErrors.city ? 'border-[#ef4444]' : 'border-[#d1d5db]'}`}
                   value={profile.city}
                   onChange={handleChange('city')}
                   placeholder="City"
@@ -445,8 +443,8 @@ function EmployeeOnboardingPage() {
             </button>
           </form>
         </section>
-      </div>
-    </main>
+      </main>
+    </div>
   )
 }
 

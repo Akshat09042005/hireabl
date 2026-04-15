@@ -21,6 +21,10 @@ model User {
   city       String?
   qualification String?
   companyName String?
+  designation  String?
+  skills       String[] @default([])
+  yearsOfExperience Int?
+  workEmail    String?
   profilePhoto String?
   onboardingCompleted Boolean @default(false)
   provider   String?   // 'google', 'microsoft', 'linkedin'

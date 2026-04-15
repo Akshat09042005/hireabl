@@ -1,44 +1,114 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Loader2, X } from 'lucide-react'
+import { ChevronDown, Loader2, X } from 'lucide-react'
 import { useAuth } from '../context/AuthContext'
-import { getErrorMessage } from '../utils/apiError'
 
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || 'http://localhost:5051'
 
-const SKILL_OPTIONS = ['C++', 'HTML', 'CSS', 'ReactJS', 'NodeJS', 'ExpressJS']
-
-const DEPARTMENT_OPTIONS = [
-  'Engineering',
-  'Product',
-  'Design',
-  'Marketing',
+const SKILL_OPTIONS = [
+  'Software Development',
+  'Web Development',
+  'Mobile App Development',
+  'Data Science & Analytics',
+  'Artificial Intelligence & Machine Learning',
+  'Cybersecurity',
+  'Cloud Computing & DevOps',
+  'Database Management',
+  'IT Support & Networking',
+  'QA & Testing',
   'Sales',
-  'Operations',
-  'HR',
-  'Finance',
-  'Other',
+  'Business Development',
+  'Marketing',
+  'Digital Marketing',
+  'Operations Management',
+  'Project Management',
+  'Product Management',
+  'Strategy & Consulting',
+  'Entrepreneurship',
+  'Accounting',
+  'Financial Analysis',
+  'Auditing',
+  'Taxation',
+  'Investment & Wealth Management',
+  'Banking Operations',
+  'Recruitment',
+  'Talent Acquisition',
+  'Employee Engagement',
+  'Payroll & Compliance',
+  'Training & Development',
+  'Administration',
+  'Graphic Design',
+  'UI/UX Design',
+  'Animation & Motion Graphics',
+  'Video Editing',
+  'Content Writing',
+  'Copywriting',
+  'Mechanical Engineering',
+  'Electrical Engineering',
+  'Civil Engineering',
+  'Production & Manufacturing',
+  'Quality Control',
+  'Maintenance & Operations',
+  'Customer Support',
+  'Customer Success',
+  'Technical Support',
+  'Client Relationship Management',
+  'Procurement & Purchasing',
+  'Inventory Management',
+  'Logistics & Distribution',
+  'Warehouse Management',
+  'Medical Practice',
+  'Nursing',
+  'Pharmacy',
+  'Healthcare Administration',
+  'Biotechnology & Research',
+  'Data Entry',
+  'Research & Analysis',
+  'Field Operations',
+  'Freelancing',
+  'Multi-Skilled / Generalist',
+  'Legal Advisory',
+  'Compliance & Risk Management',
+  'Contract Management',
 ]
+
+function isValidEmail(email) {
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(email || '').trim())
+}
 
 function EmployeeProfessionalPage() {
   const navigate = useNavigate()
-  const { token, user: authUser } = useAuth()
+  const { token } = useAuth()
 
   const [form, setForm] = useState({
     qualification: '',
     companyName: '',
     designation: '',
     yearsOfExperience: '',
-    department: '',
     workEmail: '',
   })
   const [selectedSkills, setSelectedSkills] = useState([])
+  const [dropdownOpen, setDropdownOpen] = useState(false)
+  const [skillSearch, setSkillSearch] = useState('')
+  const dropdownRef = useRef(null)
+
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState('')
   const [fieldErrors, setFieldErrors] = useState({})
-  const fieldRefs = useRef({})
 
-  // Fetch existing data to pre-fill if user comes back
+  // Close dropdown on outside click
+  useEffect(() => {
+    const handler = (e) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(e.target)) {
+        setDropdownOpen(false)
+        setSkillSearch('')
+      }
+    }
+    document.addEventListener('mousedown', handler)
+    return () => document.removeEventListener('mousedown', handler)
+  }, [])
+
+  // Pre-fill from DB
   useEffect(() => {
     if (!token) return
     let cancelled = false
@@ -51,40 +121,57 @@ function EmployeeProfessionalPage() {
         const data = await res.json()
         const dbUser = data?.data?.user || {}
         if (!cancelled) {
-          setForm({
-            qualification: dbUser.qualification || '',
-            companyName: dbUser.companyName || '',
-            designation: dbUser.designation || '',
-            yearsOfExperience: dbUser.yearsOfExperience !== undefined ? String(dbUser.yearsOfExperience) : '',
-            department: dbUser.department || '',
-            workEmail: dbUser.workEmail || '',
-          })
-          if (Array.isArray(dbUser.skills)) setSelectedSkills(dbUser.skills)
+          setForm((prev) => ({
+            qualification: dbUser.qualification || prev.qualification,
+            companyName: dbUser.companyName || prev.companyName,
+            designation: dbUser.designation || prev.designation,
+            yearsOfExperience: dbUser.yearsOfExperience !== undefined && dbUser.yearsOfExperience !== null
+              ? String(dbUser.yearsOfExperience)
+              : prev.yearsOfExperience,
+            workEmail: dbUser.workEmail || prev.workEmail,
+          }))
+          if (Array.isArray(dbUser.skills) && dbUser.skills.length > 0) {
+            setSelectedSkills(dbUser.skills)
+          }
         }
       } catch (_) {
-        // silently ignore; form starts empty
+        // silently ignore
       }
     }
     loadProfile()
     return () => { cancelled = true }
   }, [token])
 
-  // Read Step 1 data from localStorage for progress calculation
-  const [step1FieldCount, setStep1FieldCount] = useState(5) // assume all filled if reached Step 2
+  // Auto-fill from resume data (only if fields are empty)
+  useEffect(() => {
+    try {
+      const resumeData = JSON.parse(localStorage.getItem('resumeData'))
+      if (resumeData) {
+        setForm((prev) => ({
+          ...prev,
+          qualification: prev.qualification || resumeData.qualification || '',
+        }))
+        setSelectedSkills((prev) =>
+          prev.length === 0 && Array.isArray(resumeData.skills) ? resumeData.skills : prev
+        )
+      }
+    } catch (_) {}
+  }, [])
+
+  // Step 1 count for progress
+  const [step1FieldCount, setStep1FieldCount] = useState(5)
   useEffect(() => {
     try {
       const saved = JSON.parse(localStorage.getItem('step1Data'))
       if (saved) {
         const fields = [saved.name, saved.phone, saved.country, saved.city]
-        // 4 fields from localStorage + resume (assumed present since they passed Step 1)
         setStep1FieldCount(fields.filter(Boolean).length + 1)
       }
-    } catch (_) {
-      // ignore parse errors
-    }
+    } catch (_) {}
   }, [])
 
-  // Step 2 progress: each filled field contributes equally, up to 50% of total
+  const step1Completion = useMemo(() => Math.round((step1FieldCount / 5) * 33), [step1FieldCount])
+
   const step2Completion = useMemo(() => {
     const step2Fields = [
       form.qualification.trim(),
@@ -92,13 +179,8 @@ function EmployeeProfessionalPage() {
       form.designation.trim(),
       selectedSkills.length > 0,
     ]
-    return Math.round((step2Fields.filter(Boolean).length / step2Fields.length) * 50)
+    return Math.round((step2Fields.filter(Boolean).length / step2Fields.length) * 33)
   }, [form.qualification, form.companyName, form.designation, selectedSkills])
-
-  // Step 1 progress based on persisted data
-  const step1Completion = useMemo(() => {
-    return Math.round((step1FieldCount / 5) * 50)
-  }, [step1FieldCount])
 
   const totalCompletion = Math.min(step1Completion + step2Completion, 100)
 
@@ -131,6 +213,10 @@ function EmployeeProfessionalPage() {
     setSelectedSkills((prev) => prev.filter((s) => s !== skill))
   }
 
+  const filteredSkills = SKILL_OPTIONS.filter(
+    (s) => s.toLowerCase().includes(skillSearch.toLowerCase()) && !selectedSkills.includes(s)
+  )
+
   const handleSubmit = async (e) => {
     e.preventDefault()
 
@@ -139,14 +225,12 @@ function EmployeeProfessionalPage() {
     if (!form.companyName.trim())   nextFieldErrors.companyName = 'Company name is required'
     if (!form.designation.trim())   nextFieldErrors.designation = 'Designation is required'
     if (selectedSkills.length === 0) nextFieldErrors.skills = 'Select at least one skill'
+    if (form.workEmail.trim() && !isValidEmail(form.workEmail)) {
+      nextFieldErrors.workEmail = 'Enter a valid email address'
+    }
 
     if (Object.keys(nextFieldErrors).length > 0) {
       setFieldErrors(nextFieldErrors)
-      const firstErrorField = ['qualification', 'companyName', 'designation'].find((k) => nextFieldErrors[k])
-      if (firstErrorField && fieldRefs.current[firstErrorField]) {
-        fieldRefs.current[firstErrorField].scrollIntoView({ behavior: 'smooth', block: 'center' })
-        fieldRefs.current[firstErrorField].focus()
-      }
       return
     }
 
@@ -156,7 +240,6 @@ function EmployeeProfessionalPage() {
       designation: form.designation.trim(),
       skills: selectedSkills,
       ...(form.yearsOfExperience !== '' && { yearsOfExperience: Number(form.yearsOfExperience) }),
-      ...(form.department && { department: form.department }),
       ...(form.workEmail.trim() && { workEmail: form.workEmail.trim() }),
     }
 
@@ -173,53 +256,63 @@ function EmployeeProfessionalPage() {
         body: JSON.stringify(payload),
       })
       if (!res.ok) {
-        const msg = await getErrorMessage(res, 'Request failed')
-        throw new Error(msg)
+        // Parse error but show a clean message to the user
+        let serverMsg = 'Something went wrong. Please try again.'
+        try {
+          const json = await res.json()
+          if (json?.message && !json.message.toLowerCase().includes('route')) {
+            serverMsg = json.message
+          }
+        } catch (_) {}
+        throw new Error(serverMsg)
       }
-      navigate('/dashboard')
+      // Save step 2 data for review page
+      localStorage.setItem('step2Data', JSON.stringify({
+        qualification: payload.qualification,
+        companyName: payload.companyName,
+        designation: payload.designation,
+        yearsOfExperience: form.yearsOfExperience,
+        skills: selectedSkills,
+      }))
+      navigate('/employee/employer-details')
     } catch (err) {
-      setError(err.message || 'Failed to save professional details')
+      setError(err.message || 'Something went wrong. Please try again.')
     } finally {
       setSubmitting(false)
     }
   }
 
-  const setFieldRef = (field) => (el) => { fieldRefs.current[field] = el }
-  const displayName = authUser?.name || authUser?.email?.split('@')[0] || 'there'
-
   return (
-    <main
-      className="min-h-screen bg-cover bg-center flex items-center justify-center relative font-['Inter']"
-      style={{ backgroundImage: `url('/signupbackground.jpg')` }}
-    >
-      {/* Overlay */}
-      <div className="absolute inset-0 bg-black/30" />
+    <div className="min-h-screen bg-[#f6f8fb] font-['Inter']">
+      {/* Top Header Strip — Naukri style */}
+      <header className="w-full bg-white border-b border-[#e5e7eb] h-20 flex items-center justify-between px-10">
+        <img src="/logo.jpg" alt="Hireabl" className="h-12 w-auto object-contain rounded" />
+      </header>
 
-      <div className="relative z-10 w-full h-screen flex items-center justify-center p-4 animate-signup-fade-in">
-        <section className="w-full max-w-lg md:max-w-xl bg-white/80 backdrop-blur-lg rounded-2xl shadow-xl p-6 border border-white/30 max-h-[95vh] flex flex-col overflow-y-auto">
+      <main className="flex items-start justify-center min-h-[calc(100vh-80px)] py-8 px-4">
+        <section className="w-full max-w-lg bg-white rounded-xl shadow-md p-6 md:p-8">
 
           {/* Header */}
           <div className="text-center mb-1">
-            <h1 className="text-xl md:text-2xl font-semibold text-[#111827]">
-              Professional Details
-            </h1>
-            <p className="text-xs text-[#9ca3af] mt-0.5">Step 2 of 2 · Career Info</p>
+            <h1 className="text-xl md:text-2xl font-semibold text-[#111827]">Professional Details</h1>
+            <p className="text-xs text-[#9ca3af] mt-0.5">Step 2 of 4 · Career Info</p>
           </div>
 
           {/* Progress */}
-          <div className="mt-3">
-            <p className="text-sm text-[#6b7280] text-center mb-2">
-              Profile Completion: <span className="font-semibold text-[#2563eb]">{totalCompletion}%</span>
-            </p>
-            <div className="w-full bg-[#e5e7eb] rounded-full h-2">
+          <div className="mt-4 mb-6">
+            <div className="flex justify-between text-xs text-[#6b7280] mb-1.5">
+              <span>Profile Completion</span>
+              <span className="font-semibold text-[#2563eb]">{totalCompletion}%</span>
+            </div>
+            <div className="w-full bg-[#e5e7eb] rounded-full h-1.5">
               <div
-                className="bg-[#2563eb] h-2 rounded-full transition-all duration-300"
+                className="bg-[#2563eb] h-1.5 rounded-full transition-all duration-300"
                 style={{ width: `${totalCompletion}%` }}
               />
             </div>
           </div>
 
-          <form className="mt-5 space-y-3" onSubmit={handleSubmit}>
+          <form className="space-y-4" onSubmit={handleSubmit}>
 
             {/* Qualification */}
             <div>
@@ -227,11 +320,10 @@ function EmployeeProfessionalPage() {
                 Qualification <span className="text-red-500">*</span>
               </label>
               <input
-                ref={setFieldRef('qualification')}
                 className={`w-full rounded-lg border bg-white px-3 py-2.5 text-sm text-[#111827] outline-none focus:border-[#2563eb] transition-colors duration-200 ${fieldErrors.qualification ? 'border-[#ef4444]' : 'border-[#d1d5db]'}`}
                 value={form.qualification}
                 onChange={handleChange('qualification')}
-                placeholder="e.g. B.Tech, MBA"
+                placeholder="e.g. B.Tech, MBA, B.Com"
               />
               {fieldErrors.qualification && <p className="mt-1 text-sm text-[#b42318]">{fieldErrors.qualification}</p>}
             </div>
@@ -242,31 +334,47 @@ function EmployeeProfessionalPage() {
                 Company Name <span className="text-red-500">*</span>
               </label>
               <input
-                ref={setFieldRef('companyName')}
                 className={`w-full rounded-lg border bg-white px-3 py-2.5 text-sm text-[#111827] outline-none focus:border-[#2563eb] transition-colors duration-200 ${fieldErrors.companyName ? 'border-[#ef4444]' : 'border-[#d1d5db]'}`}
                 value={form.companyName}
                 onChange={handleChange('companyName')}
-                placeholder="Enter company name"
+                placeholder="Enter your current company name"
               />
               {fieldErrors.companyName && <p className="mt-1 text-sm text-[#b42318]">{fieldErrors.companyName}</p>}
             </div>
 
-            {/* Designation */}
-            <div>
-              <label className="block text-sm font-medium text-[#111827] mb-1">
-                Designation <span className="text-red-500">*</span>
-              </label>
-              <input
-                ref={setFieldRef('designation')}
-                className={`w-full rounded-lg border bg-white px-3 py-2.5 text-sm text-[#111827] outline-none focus:border-[#2563eb] transition-colors duration-200 ${fieldErrors.designation ? 'border-[#ef4444]' : 'border-[#d1d5db]'}`}
-                value={form.designation}
-                onChange={handleChange('designation')}
-                placeholder="e.g. Software Engineer, Product Manager"
-              />
-              {fieldErrors.designation && <p className="mt-1 text-sm text-[#b42318]">{fieldErrors.designation}</p>}
+            {/* Designation + Years of Experience side-by-side */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div>
+                <label className="block text-sm font-medium text-[#111827] mb-1">
+                  Designation <span className="text-red-500">*</span>
+                </label>
+                <input
+                  className={`w-full rounded-lg border bg-white px-3 py-2.5 text-sm text-[#111827] outline-none focus:border-[#2563eb] transition-colors duration-200 ${fieldErrors.designation ? 'border-[#ef4444]' : 'border-[#d1d5db]'}`}
+                  value={form.designation}
+                  onChange={handleChange('designation')}
+                  placeholder="e.g. Software Engineer"
+                />
+                {fieldErrors.designation && <p className="mt-1 text-sm text-[#b42318]">{fieldErrors.designation}</p>}
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-[#111827] mb-1">
+                  Years of Experience{' '}
+                  <span className="text-xs font-normal text-[#9ca3af]">(Optional)</span>
+                </label>
+                <input
+                  type="number"
+                  min="0"
+                  max="50"
+                  className="w-full rounded-lg border border-[#d1d5db] bg-white px-3 py-2.5 text-sm text-[#111827] outline-none focus:border-[#2563eb] transition-colors duration-200"
+                  value={form.yearsOfExperience}
+                  onChange={handleChange('yearsOfExperience')}
+                  placeholder="e.g. 3"
+                />
+              </div>
             </div>
 
-            {/* Primary Skills — chip multi-select */}
+            {/* Primary Skills — Dropdown multi-select */}
             <div>
               <label className="block text-sm font-medium text-[#111827] mb-1">
                 Primary Skills <span className="text-red-500">*</span>
@@ -294,62 +402,55 @@ function EmployeeProfessionalPage() {
                 </div>
               )}
 
-              {/* Skill chips to pick from */}
-              <div className="flex flex-wrap gap-2">
-                {SKILL_OPTIONS.map((skill) => {
-                  const selected = selectedSkills.includes(skill)
-                  return (
-                    <button
-                      key={skill}
-                      type="button"
-                      onClick={() => toggleSkill(skill)}
-                      className={`rounded-full border px-3 py-1 text-xs font-medium transition-colors duration-150 ${
-                        selected
-                          ? 'bg-[#2563eb] border-[#2563eb] text-white'
-                          : 'bg-white border-[#d1d5db] text-[#374151] hover:border-[#2563eb] hover:text-[#2563eb]'
-                      }`}
-                    >
-                      {skill}
-                    </button>
-                  )
-                })}
+              {/* Dropdown */}
+              <div ref={dropdownRef} className="relative">
+                <button
+                  type="button"
+                  onClick={() => setDropdownOpen((v) => !v)}
+                  className={`w-full flex items-center justify-between rounded-lg border bg-white px-3 py-2.5 text-sm text-left transition-colors duration-200 ${
+                    fieldErrors.skills ? 'border-[#ef4444]' : dropdownOpen ? 'border-[#2563eb]' : 'border-[#d1d5db]'
+                  } text-[#6b7280] hover:border-[#2563eb]`}
+                >
+                  <span>
+                    {selectedSkills.length > 0
+                      ? `${selectedSkills.length} skill${selectedSkills.length > 1 ? 's' : ''} selected`
+                      : 'Select skills'}
+                  </span>
+                  <ChevronDown size={16} className={`transition-transform duration-200 ${dropdownOpen ? 'rotate-180' : ''}`} />
+                </button>
+
+                {dropdownOpen && (
+                  <div className="absolute z-20 mt-1 w-full bg-white border border-[#e5e7eb] rounded-lg shadow-lg max-h-52 overflow-hidden flex flex-col">
+                    <div className="p-2 border-b border-[#f3f4f6]">
+                      <input
+                        type="text"
+                        placeholder="Search skills..."
+                        className="w-full px-2 py-1.5 text-sm border border-[#d1d5db] rounded-md outline-none focus:border-[#2563eb]"
+                        value={skillSearch}
+                        onChange={(e) => setSkillSearch(e.target.value)}
+                        onClick={(e) => e.stopPropagation()}
+                      />
+                    </div>
+                    <div className="overflow-y-auto">
+                      {filteredSkills.length === 0 ? (
+                        <p className="text-xs text-[#9ca3af] px-3 py-3 text-center">No skills found</p>
+                      ) : (
+                        filteredSkills.map((skill) => (
+                          <button
+                            key={skill}
+                            type="button"
+                            onClick={() => { toggleSkill(skill); setSkillSearch('') }}
+                            className="w-full text-left px-3 py-2 text-sm text-[#374151] hover:bg-[#f0f9ff] hover:text-[#2563eb] transition-colors"
+                          >
+                            {skill}
+                          </button>
+                        ))
+                      )}
+                    </div>
+                  </div>
+                )}
               </div>
               {fieldErrors.skills && <p className="mt-1 text-sm text-[#b42318]">{fieldErrors.skills}</p>}
-            </div>
-
-            {/* Years of Experience — optional */}
-            <div>
-              <label className="block text-sm font-medium text-[#111827] mb-1">
-                Years of Experience{' '}
-                <span className="text-xs font-normal text-[#9ca3af]">(Optional)</span>
-              </label>
-              <input
-                type="number"
-                min="0"
-                max="50"
-                className="w-full rounded-lg border border-[#d1d5db] bg-white px-3 py-2.5 text-sm text-[#111827] outline-none focus:border-[#2563eb] transition-colors duration-200"
-                value={form.yearsOfExperience}
-                onChange={handleChange('yearsOfExperience')}
-                placeholder="e.g. 3"
-              />
-            </div>
-
-            {/* Department — optional dropdown */}
-            <div>
-              <label className="block text-sm font-medium text-[#111827] mb-1">
-                Department{' '}
-                <span className="text-xs font-normal text-[#9ca3af]">(Optional)</span>
-              </label>
-              <select
-                className="w-full rounded-lg border border-[#d1d5db] bg-white px-3 py-2.5 text-sm text-[#111827] outline-none focus:border-[#2563eb] transition-colors duration-200 appearance-none"
-                value={form.department}
-                onChange={handleChange('department')}
-              >
-                <option value="">Select department</option>
-                {DEPARTMENT_OPTIONS.map((d) => (
-                  <option key={d} value={d}>{d}</option>
-                ))}
-              </select>
             </div>
 
             {/* Work Email — optional */}
@@ -360,11 +461,12 @@ function EmployeeProfessionalPage() {
               </label>
               <input
                 type="email"
-                className="w-full rounded-lg border border-[#d1d5db] bg-white px-3 py-2.5 text-sm text-[#111827] outline-none focus:border-[#2563eb] transition-colors duration-200"
+                className={`w-full rounded-lg border bg-white px-3 py-2.5 text-sm text-[#111827] outline-none focus:border-[#2563eb] transition-colors duration-200 ${fieldErrors.workEmail ? 'border-[#ef4444]' : 'border-[#d1d5db]'}`}
                 value={form.workEmail}
                 onChange={handleChange('workEmail')}
-                placeholder="work@company.com"
+                placeholder="Enter your work email (optional)"
               />
+              {fieldErrors.workEmail && <p className="mt-1 text-sm text-[#b42318]">{fieldErrors.workEmail}</p>}
             </div>
 
             {error && <p className="text-sm text-[#b42318]">{error}</p>}
@@ -392,8 +494,8 @@ function EmployeeProfessionalPage() {
             </div>
           </form>
         </section>
-      </div>
-    </main>
+      </main>
+    </div>
   )
 }
 

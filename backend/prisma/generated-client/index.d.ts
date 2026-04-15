@@ -1054,8 +1054,18 @@ export namespace Prisma {
 
   export type AggregateUser = {
     _count: UserCountAggregateOutputType | null
+    _avg: UserAvgAggregateOutputType | null
+    _sum: UserSumAggregateOutputType | null
     _min: UserMinAggregateOutputType | null
     _max: UserMaxAggregateOutputType | null
+  }
+
+  export type UserAvgAggregateOutputType = {
+    yearsOfExperience: number | null
+  }
+
+  export type UserSumAggregateOutputType = {
+    yearsOfExperience: number | null
   }
 
   export type UserMinAggregateOutputType = {
@@ -1067,6 +1077,9 @@ export namespace Prisma {
     city: string | null
     qualification: string | null
     companyName: string | null
+    designation: string | null
+    yearsOfExperience: number | null
+    workEmail: string | null
     profilePhoto: string | null
     onboardingCompleted: boolean | null
     provider: string | null
@@ -1084,6 +1097,9 @@ export namespace Prisma {
     city: string | null
     qualification: string | null
     companyName: string | null
+    designation: string | null
+    yearsOfExperience: number | null
+    workEmail: string | null
     profilePhoto: string | null
     onboardingCompleted: boolean | null
     provider: string | null
@@ -1101,6 +1117,10 @@ export namespace Prisma {
     city: number
     qualification: number
     companyName: number
+    designation: number
+    skills: number
+    yearsOfExperience: number
+    workEmail: number
     profilePhoto: number
     onboardingCompleted: number
     provider: number
@@ -1111,6 +1131,14 @@ export namespace Prisma {
   }
 
 
+  export type UserAvgAggregateInputType = {
+    yearsOfExperience?: true
+  }
+
+  export type UserSumAggregateInputType = {
+    yearsOfExperience?: true
+  }
+
   export type UserMinAggregateInputType = {
     id?: true
     email?: true
@@ -1120,6 +1148,9 @@ export namespace Prisma {
     city?: true
     qualification?: true
     companyName?: true
+    designation?: true
+    yearsOfExperience?: true
+    workEmail?: true
     profilePhoto?: true
     onboardingCompleted?: true
     provider?: true
@@ -1137,6 +1168,9 @@ export namespace Prisma {
     city?: true
     qualification?: true
     companyName?: true
+    designation?: true
+    yearsOfExperience?: true
+    workEmail?: true
     profilePhoto?: true
     onboardingCompleted?: true
     provider?: true
@@ -1154,6 +1188,10 @@ export namespace Prisma {
     city?: true
     qualification?: true
     companyName?: true
+    designation?: true
+    skills?: true
+    yearsOfExperience?: true
+    workEmail?: true
     profilePhoto?: true
     onboardingCompleted?: true
     provider?: true
@@ -1201,6 +1239,18 @@ export namespace Prisma {
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
      * 
+     * Select which fields to average
+    **/
+    _avg?: UserAvgAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to sum
+    **/
+    _sum?: UserSumAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
      * Select which fields to find the minimum value
     **/
     _min?: UserMinAggregateInputType
@@ -1231,6 +1281,8 @@ export namespace Prisma {
     take?: number
     skip?: number
     _count?: UserCountAggregateInputType | true
+    _avg?: UserAvgAggregateInputType
+    _sum?: UserSumAggregateInputType
     _min?: UserMinAggregateInputType
     _max?: UserMaxAggregateInputType
   }
@@ -1244,6 +1296,10 @@ export namespace Prisma {
     city: string | null
     qualification: string | null
     companyName: string | null
+    designation: string | null
+    skills: string[]
+    yearsOfExperience: number | null
+    workEmail: string | null
     profilePhoto: string | null
     onboardingCompleted: boolean
     provider: string | null
@@ -1251,6 +1307,8 @@ export namespace Prisma {
     role: string
     createdAt: Date
     _count: UserCountAggregateOutputType | null
+    _avg: UserAvgAggregateOutputType | null
+    _sum: UserSumAggregateOutputType | null
     _min: UserMinAggregateOutputType | null
     _max: UserMaxAggregateOutputType | null
   }
@@ -1278,6 +1336,10 @@ export namespace Prisma {
     city?: boolean
     qualification?: boolean
     companyName?: boolean
+    designation?: boolean
+    skills?: boolean
+    yearsOfExperience?: boolean
+    workEmail?: boolean
     profilePhoto?: boolean
     onboardingCompleted?: boolean
     provider?: boolean
@@ -1297,6 +1359,10 @@ export namespace Prisma {
     city?: boolean
     qualification?: boolean
     companyName?: boolean
+    designation?: boolean
+    skills?: boolean
+    yearsOfExperience?: boolean
+    workEmail?: boolean
     profilePhoto?: boolean
     onboardingCompleted?: boolean
     provider?: boolean
@@ -1314,6 +1380,10 @@ export namespace Prisma {
     city?: boolean
     qualification?: boolean
     companyName?: boolean
+    designation?: boolean
+    skills?: boolean
+    yearsOfExperience?: boolean
+    workEmail?: boolean
     profilePhoto?: boolean
     onboardingCompleted?: boolean
     provider?: boolean
@@ -1331,6 +1401,10 @@ export namespace Prisma {
     city?: boolean
     qualification?: boolean
     companyName?: boolean
+    designation?: boolean
+    skills?: boolean
+    yearsOfExperience?: boolean
+    workEmail?: boolean
     profilePhoto?: boolean
     onboardingCompleted?: boolean
     provider?: boolean
@@ -1339,7 +1413,7 @@ export namespace Prisma {
     createdAt?: boolean
   }
 
-  export type UserOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "email" | "phone" | "name" | "country" | "city" | "qualification" | "companyName" | "profilePhoto" | "onboardingCompleted" | "provider" | "providerId" | "role" | "createdAt", ExtArgs["result"]["user"]>
+  export type UserOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "email" | "phone" | "name" | "country" | "city" | "qualification" | "companyName" | "designation" | "skills" | "yearsOfExperience" | "workEmail" | "profilePhoto" | "onboardingCompleted" | "provider" | "providerId" | "role" | "createdAt", ExtArgs["result"]["user"]>
   export type UserInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     employee?: boolean | User$employeeArgs<ExtArgs>
     employer?: boolean | User$employerArgs<ExtArgs>
@@ -1362,6 +1436,10 @@ export namespace Prisma {
       city: string | null
       qualification: string | null
       companyName: string | null
+      designation: string | null
+      skills: string[]
+      yearsOfExperience: number | null
+      workEmail: string | null
       profilePhoto: string | null
       onboardingCompleted: boolean
       provider: string | null
@@ -1801,6 +1879,10 @@ export namespace Prisma {
     readonly city: FieldRef<"User", 'String'>
     readonly qualification: FieldRef<"User", 'String'>
     readonly companyName: FieldRef<"User", 'String'>
+    readonly designation: FieldRef<"User", 'String'>
+    readonly skills: FieldRef<"User", 'String[]'>
+    readonly yearsOfExperience: FieldRef<"User", 'Int'>
+    readonly workEmail: FieldRef<"User", 'String'>
     readonly profilePhoto: FieldRef<"User", 'String'>
     readonly onboardingCompleted: FieldRef<"User", 'Boolean'>
     readonly provider: FieldRef<"User", 'String'>
@@ -4379,6 +4461,10 @@ export namespace Prisma {
     city: 'city',
     qualification: 'qualification',
     companyName: 'companyName',
+    designation: 'designation',
+    skills: 'skills',
+    yearsOfExperience: 'yearsOfExperience',
+    workEmail: 'workEmail',
     profilePhoto: 'profilePhoto',
     onboardingCompleted: 'onboardingCompleted',
     provider: 'provider',
@@ -4454,6 +4540,20 @@ export namespace Prisma {
 
 
   /**
+   * Reference to a field of type 'Int'
+   */
+  export type IntFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Int'>
+    
+
+
+  /**
+   * Reference to a field of type 'Int[]'
+   */
+  export type ListIntFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Int[]'>
+    
+
+
+  /**
    * Reference to a field of type 'Boolean'
    */
   export type BooleanFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Boolean'>
@@ -4475,16 +4575,16 @@ export namespace Prisma {
 
 
   /**
-   * Reference to a field of type 'Int'
+   * Reference to a field of type 'Float'
    */
-  export type IntFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Int'>
+  export type FloatFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Float'>
     
 
 
   /**
-   * Reference to a field of type 'Int[]'
+   * Reference to a field of type 'Float[]'
    */
-  export type ListIntFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Int[]'>
+  export type ListFloatFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Float[]'>
     
   /**
    * Deep Input Types
@@ -4503,6 +4603,10 @@ export namespace Prisma {
     city?: StringNullableFilter<"User"> | string | null
     qualification?: StringNullableFilter<"User"> | string | null
     companyName?: StringNullableFilter<"User"> | string | null
+    designation?: StringNullableFilter<"User"> | string | null
+    skills?: StringNullableListFilter<"User">
+    yearsOfExperience?: IntNullableFilter<"User"> | number | null
+    workEmail?: StringNullableFilter<"User"> | string | null
     profilePhoto?: StringNullableFilter<"User"> | string | null
     onboardingCompleted?: BoolFilter<"User"> | boolean
     provider?: StringNullableFilter<"User"> | string | null
@@ -4522,6 +4626,10 @@ export namespace Prisma {
     city?: SortOrderInput | SortOrder
     qualification?: SortOrderInput | SortOrder
     companyName?: SortOrderInput | SortOrder
+    designation?: SortOrderInput | SortOrder
+    skills?: SortOrder
+    yearsOfExperience?: SortOrderInput | SortOrder
+    workEmail?: SortOrderInput | SortOrder
     profilePhoto?: SortOrderInput | SortOrder
     onboardingCompleted?: SortOrder
     provider?: SortOrderInput | SortOrder
@@ -4545,6 +4653,10 @@ export namespace Prisma {
     city?: StringNullableFilter<"User"> | string | null
     qualification?: StringNullableFilter<"User"> | string | null
     companyName?: StringNullableFilter<"User"> | string | null
+    designation?: StringNullableFilter<"User"> | string | null
+    skills?: StringNullableListFilter<"User">
+    yearsOfExperience?: IntNullableFilter<"User"> | number | null
+    workEmail?: StringNullableFilter<"User"> | string | null
     profilePhoto?: StringNullableFilter<"User"> | string | null
     onboardingCompleted?: BoolFilter<"User"> | boolean
     provider?: StringNullableFilter<"User"> | string | null
@@ -4564,6 +4676,10 @@ export namespace Prisma {
     city?: SortOrderInput | SortOrder
     qualification?: SortOrderInput | SortOrder
     companyName?: SortOrderInput | SortOrder
+    designation?: SortOrderInput | SortOrder
+    skills?: SortOrder
+    yearsOfExperience?: SortOrderInput | SortOrder
+    workEmail?: SortOrderInput | SortOrder
     profilePhoto?: SortOrderInput | SortOrder
     onboardingCompleted?: SortOrder
     provider?: SortOrderInput | SortOrder
@@ -4571,8 +4687,10 @@ export namespace Prisma {
     role?: SortOrder
     createdAt?: SortOrder
     _count?: UserCountOrderByAggregateInput
+    _avg?: UserAvgOrderByAggregateInput
     _max?: UserMaxOrderByAggregateInput
     _min?: UserMinOrderByAggregateInput
+    _sum?: UserSumOrderByAggregateInput
   }
 
   export type UserScalarWhereWithAggregatesInput = {
@@ -4587,6 +4705,10 @@ export namespace Prisma {
     city?: StringNullableWithAggregatesFilter<"User"> | string | null
     qualification?: StringNullableWithAggregatesFilter<"User"> | string | null
     companyName?: StringNullableWithAggregatesFilter<"User"> | string | null
+    designation?: StringNullableWithAggregatesFilter<"User"> | string | null
+    skills?: StringNullableListFilter<"User">
+    yearsOfExperience?: IntNullableWithAggregatesFilter<"User"> | number | null
+    workEmail?: StringNullableWithAggregatesFilter<"User"> | string | null
     profilePhoto?: StringNullableWithAggregatesFilter<"User"> | string | null
     onboardingCompleted?: BoolWithAggregatesFilter<"User"> | boolean
     provider?: StringNullableWithAggregatesFilter<"User"> | string | null
@@ -4704,6 +4826,10 @@ export namespace Prisma {
     city?: string | null
     qualification?: string | null
     companyName?: string | null
+    designation?: string | null
+    skills?: UserCreateskillsInput | string[]
+    yearsOfExperience?: number | null
+    workEmail?: string | null
     profilePhoto?: string | null
     onboardingCompleted?: boolean
     provider?: string | null
@@ -4723,6 +4849,10 @@ export namespace Prisma {
     city?: string | null
     qualification?: string | null
     companyName?: string | null
+    designation?: string | null
+    skills?: UserCreateskillsInput | string[]
+    yearsOfExperience?: number | null
+    workEmail?: string | null
     profilePhoto?: string | null
     onboardingCompleted?: boolean
     provider?: string | null
@@ -4742,6 +4872,10 @@ export namespace Prisma {
     city?: NullableStringFieldUpdateOperationsInput | string | null
     qualification?: NullableStringFieldUpdateOperationsInput | string | null
     companyName?: NullableStringFieldUpdateOperationsInput | string | null
+    designation?: NullableStringFieldUpdateOperationsInput | string | null
+    skills?: UserUpdateskillsInput | string[]
+    yearsOfExperience?: NullableIntFieldUpdateOperationsInput | number | null
+    workEmail?: NullableStringFieldUpdateOperationsInput | string | null
     profilePhoto?: NullableStringFieldUpdateOperationsInput | string | null
     onboardingCompleted?: BoolFieldUpdateOperationsInput | boolean
     provider?: NullableStringFieldUpdateOperationsInput | string | null
@@ -4761,6 +4895,10 @@ export namespace Prisma {
     city?: NullableStringFieldUpdateOperationsInput | string | null
     qualification?: NullableStringFieldUpdateOperationsInput | string | null
     companyName?: NullableStringFieldUpdateOperationsInput | string | null
+    designation?: NullableStringFieldUpdateOperationsInput | string | null
+    skills?: UserUpdateskillsInput | string[]
+    yearsOfExperience?: NullableIntFieldUpdateOperationsInput | number | null
+    workEmail?: NullableStringFieldUpdateOperationsInput | string | null
     profilePhoto?: NullableStringFieldUpdateOperationsInput | string | null
     onboardingCompleted?: BoolFieldUpdateOperationsInput | boolean
     provider?: NullableStringFieldUpdateOperationsInput | string | null
@@ -4780,6 +4918,10 @@ export namespace Prisma {
     city?: string | null
     qualification?: string | null
     companyName?: string | null
+    designation?: string | null
+    skills?: UserCreateskillsInput | string[]
+    yearsOfExperience?: number | null
+    workEmail?: string | null
     profilePhoto?: string | null
     onboardingCompleted?: boolean
     provider?: string | null
@@ -4797,6 +4939,10 @@ export namespace Prisma {
     city?: NullableStringFieldUpdateOperationsInput | string | null
     qualification?: NullableStringFieldUpdateOperationsInput | string | null
     companyName?: NullableStringFieldUpdateOperationsInput | string | null
+    designation?: NullableStringFieldUpdateOperationsInput | string | null
+    skills?: UserUpdateskillsInput | string[]
+    yearsOfExperience?: NullableIntFieldUpdateOperationsInput | number | null
+    workEmail?: NullableStringFieldUpdateOperationsInput | string | null
     profilePhoto?: NullableStringFieldUpdateOperationsInput | string | null
     onboardingCompleted?: BoolFieldUpdateOperationsInput | boolean
     provider?: NullableStringFieldUpdateOperationsInput | string | null
@@ -4814,6 +4960,10 @@ export namespace Prisma {
     city?: NullableStringFieldUpdateOperationsInput | string | null
     qualification?: NullableStringFieldUpdateOperationsInput | string | null
     companyName?: NullableStringFieldUpdateOperationsInput | string | null
+    designation?: NullableStringFieldUpdateOperationsInput | string | null
+    skills?: UserUpdateskillsInput | string[]
+    yearsOfExperience?: NullableIntFieldUpdateOperationsInput | number | null
+    workEmail?: NullableStringFieldUpdateOperationsInput | string | null
     profilePhoto?: NullableStringFieldUpdateOperationsInput | string | null
     onboardingCompleted?: BoolFieldUpdateOperationsInput | boolean
     provider?: NullableStringFieldUpdateOperationsInput | string | null
@@ -4948,6 +5098,25 @@ export namespace Prisma {
     not?: NestedStringNullableFilter<$PrismaModel> | string | null
   }
 
+  export type StringNullableListFilter<$PrismaModel = never> = {
+    equals?: string[] | ListStringFieldRefInput<$PrismaModel> | null
+    has?: string | StringFieldRefInput<$PrismaModel> | null
+    hasEvery?: string[] | ListStringFieldRefInput<$PrismaModel>
+    hasSome?: string[] | ListStringFieldRefInput<$PrismaModel>
+    isEmpty?: boolean
+  }
+
+  export type IntNullableFilter<$PrismaModel = never> = {
+    equals?: number | IntFieldRefInput<$PrismaModel> | null
+    in?: number[] | ListIntFieldRefInput<$PrismaModel> | null
+    notIn?: number[] | ListIntFieldRefInput<$PrismaModel> | null
+    lt?: number | IntFieldRefInput<$PrismaModel>
+    lte?: number | IntFieldRefInput<$PrismaModel>
+    gt?: number | IntFieldRefInput<$PrismaModel>
+    gte?: number | IntFieldRefInput<$PrismaModel>
+    not?: NestedIntNullableFilter<$PrismaModel> | number | null
+  }
+
   export type BoolFilter<$PrismaModel = never> = {
     equals?: boolean | BooleanFieldRefInput<$PrismaModel>
     not?: NestedBoolFilter<$PrismaModel> | boolean
@@ -4993,12 +5162,20 @@ export namespace Prisma {
     city?: SortOrder
     qualification?: SortOrder
     companyName?: SortOrder
+    designation?: SortOrder
+    skills?: SortOrder
+    yearsOfExperience?: SortOrder
+    workEmail?: SortOrder
     profilePhoto?: SortOrder
     onboardingCompleted?: SortOrder
     provider?: SortOrder
     providerId?: SortOrder
     role?: SortOrder
     createdAt?: SortOrder
+  }
+
+  export type UserAvgOrderByAggregateInput = {
+    yearsOfExperience?: SortOrder
   }
 
   export type UserMaxOrderByAggregateInput = {
@@ -5010,6 +5187,9 @@ export namespace Prisma {
     city?: SortOrder
     qualification?: SortOrder
     companyName?: SortOrder
+    designation?: SortOrder
+    yearsOfExperience?: SortOrder
+    workEmail?: SortOrder
     profilePhoto?: SortOrder
     onboardingCompleted?: SortOrder
     provider?: SortOrder
@@ -5027,12 +5207,19 @@ export namespace Prisma {
     city?: SortOrder
     qualification?: SortOrder
     companyName?: SortOrder
+    designation?: SortOrder
+    yearsOfExperience?: SortOrder
+    workEmail?: SortOrder
     profilePhoto?: SortOrder
     onboardingCompleted?: SortOrder
     provider?: SortOrder
     providerId?: SortOrder
     role?: SortOrder
     createdAt?: SortOrder
+  }
+
+  export type UserSumOrderByAggregateInput = {
+    yearsOfExperience?: SortOrder
   }
 
   export type StringWithAggregatesFilter<$PrismaModel = never> = {
@@ -5069,6 +5256,22 @@ export namespace Prisma {
     _count?: NestedIntNullableFilter<$PrismaModel>
     _min?: NestedStringNullableFilter<$PrismaModel>
     _max?: NestedStringNullableFilter<$PrismaModel>
+  }
+
+  export type IntNullableWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: number | IntFieldRefInput<$PrismaModel> | null
+    in?: number[] | ListIntFieldRefInput<$PrismaModel> | null
+    notIn?: number[] | ListIntFieldRefInput<$PrismaModel> | null
+    lt?: number | IntFieldRefInput<$PrismaModel>
+    lte?: number | IntFieldRefInput<$PrismaModel>
+    gt?: number | IntFieldRefInput<$PrismaModel>
+    gte?: number | IntFieldRefInput<$PrismaModel>
+    not?: NestedIntNullableWithAggregatesFilter<$PrismaModel> | number | null
+    _count?: NestedIntNullableFilter<$PrismaModel>
+    _avg?: NestedFloatNullableFilter<$PrismaModel>
+    _sum?: NestedIntNullableFilter<$PrismaModel>
+    _min?: NestedIntNullableFilter<$PrismaModel>
+    _max?: NestedIntNullableFilter<$PrismaModel>
   }
 
   export type BoolWithAggregatesFilter<$PrismaModel = never> = {
@@ -5140,6 +5343,10 @@ export namespace Prisma {
     createdAt?: SortOrder
   }
 
+  export type UserCreateskillsInput = {
+    set: string[]
+  }
+
   export type EmployeeCreateNestedOneWithoutUserInput = {
     create?: XOR<EmployeeCreateWithoutUserInput, EmployeeUncheckedCreateWithoutUserInput>
     connectOrCreate?: EmployeeCreateOrConnectWithoutUserInput
@@ -5170,6 +5377,19 @@ export namespace Prisma {
 
   export type NullableStringFieldUpdateOperationsInput = {
     set?: string | null
+  }
+
+  export type UserUpdateskillsInput = {
+    set?: string[]
+    push?: string | string[]
+  }
+
+  export type NullableIntFieldUpdateOperationsInput = {
+    set?: number | null
+    increment?: number
+    decrement?: number
+    multiply?: number
+    divide?: number
   }
 
   export type BoolFieldUpdateOperationsInput = {
@@ -5276,6 +5496,17 @@ export namespace Prisma {
     not?: NestedStringNullableFilter<$PrismaModel> | string | null
   }
 
+  export type NestedIntNullableFilter<$PrismaModel = never> = {
+    equals?: number | IntFieldRefInput<$PrismaModel> | null
+    in?: number[] | ListIntFieldRefInput<$PrismaModel> | null
+    notIn?: number[] | ListIntFieldRefInput<$PrismaModel> | null
+    lt?: number | IntFieldRefInput<$PrismaModel>
+    lte?: number | IntFieldRefInput<$PrismaModel>
+    gt?: number | IntFieldRefInput<$PrismaModel>
+    gte?: number | IntFieldRefInput<$PrismaModel>
+    not?: NestedIntNullableFilter<$PrismaModel> | number | null
+  }
+
   export type NestedBoolFilter<$PrismaModel = never> = {
     equals?: boolean | BooleanFieldRefInput<$PrismaModel>
     not?: NestedBoolFilter<$PrismaModel> | boolean
@@ -5337,7 +5568,7 @@ export namespace Prisma {
     _max?: NestedStringNullableFilter<$PrismaModel>
   }
 
-  export type NestedIntNullableFilter<$PrismaModel = never> = {
+  export type NestedIntNullableWithAggregatesFilter<$PrismaModel = never> = {
     equals?: number | IntFieldRefInput<$PrismaModel> | null
     in?: number[] | ListIntFieldRefInput<$PrismaModel> | null
     notIn?: number[] | ListIntFieldRefInput<$PrismaModel> | null
@@ -5345,7 +5576,23 @@ export namespace Prisma {
     lte?: number | IntFieldRefInput<$PrismaModel>
     gt?: number | IntFieldRefInput<$PrismaModel>
     gte?: number | IntFieldRefInput<$PrismaModel>
-    not?: NestedIntNullableFilter<$PrismaModel> | number | null
+    not?: NestedIntNullableWithAggregatesFilter<$PrismaModel> | number | null
+    _count?: NestedIntNullableFilter<$PrismaModel>
+    _avg?: NestedFloatNullableFilter<$PrismaModel>
+    _sum?: NestedIntNullableFilter<$PrismaModel>
+    _min?: NestedIntNullableFilter<$PrismaModel>
+    _max?: NestedIntNullableFilter<$PrismaModel>
+  }
+
+  export type NestedFloatNullableFilter<$PrismaModel = never> = {
+    equals?: number | FloatFieldRefInput<$PrismaModel> | null
+    in?: number[] | ListFloatFieldRefInput<$PrismaModel> | null
+    notIn?: number[] | ListFloatFieldRefInput<$PrismaModel> | null
+    lt?: number | FloatFieldRefInput<$PrismaModel>
+    lte?: number | FloatFieldRefInput<$PrismaModel>
+    gt?: number | FloatFieldRefInput<$PrismaModel>
+    gte?: number | FloatFieldRefInput<$PrismaModel>
+    not?: NestedFloatNullableFilter<$PrismaModel> | number | null
   }
 
   export type NestedBoolWithAggregatesFilter<$PrismaModel = never> = {
@@ -5459,6 +5706,10 @@ export namespace Prisma {
     city?: string | null
     qualification?: string | null
     companyName?: string | null
+    designation?: string | null
+    skills?: UserCreateskillsInput | string[]
+    yearsOfExperience?: number | null
+    workEmail?: string | null
     profilePhoto?: string | null
     onboardingCompleted?: boolean
     provider?: string | null
@@ -5477,6 +5728,10 @@ export namespace Prisma {
     city?: string | null
     qualification?: string | null
     companyName?: string | null
+    designation?: string | null
+    skills?: UserCreateskillsInput | string[]
+    yearsOfExperience?: number | null
+    workEmail?: string | null
     profilePhoto?: string | null
     onboardingCompleted?: boolean
     provider?: string | null
@@ -5511,6 +5766,10 @@ export namespace Prisma {
     city?: NullableStringFieldUpdateOperationsInput | string | null
     qualification?: NullableStringFieldUpdateOperationsInput | string | null
     companyName?: NullableStringFieldUpdateOperationsInput | string | null
+    designation?: NullableStringFieldUpdateOperationsInput | string | null
+    skills?: UserUpdateskillsInput | string[]
+    yearsOfExperience?: NullableIntFieldUpdateOperationsInput | number | null
+    workEmail?: NullableStringFieldUpdateOperationsInput | string | null
     profilePhoto?: NullableStringFieldUpdateOperationsInput | string | null
     onboardingCompleted?: BoolFieldUpdateOperationsInput | boolean
     provider?: NullableStringFieldUpdateOperationsInput | string | null
@@ -5529,6 +5788,10 @@ export namespace Prisma {
     city?: NullableStringFieldUpdateOperationsInput | string | null
     qualification?: NullableStringFieldUpdateOperationsInput | string | null
     companyName?: NullableStringFieldUpdateOperationsInput | string | null
+    designation?: NullableStringFieldUpdateOperationsInput | string | null
+    skills?: UserUpdateskillsInput | string[]
+    yearsOfExperience?: NullableIntFieldUpdateOperationsInput | number | null
+    workEmail?: NullableStringFieldUpdateOperationsInput | string | null
     profilePhoto?: NullableStringFieldUpdateOperationsInput | string | null
     onboardingCompleted?: BoolFieldUpdateOperationsInput | boolean
     provider?: NullableStringFieldUpdateOperationsInput | string | null
@@ -5547,6 +5810,10 @@ export namespace Prisma {
     city?: string | null
     qualification?: string | null
     companyName?: string | null
+    designation?: string | null
+    skills?: UserCreateskillsInput | string[]
+    yearsOfExperience?: number | null
+    workEmail?: string | null
     profilePhoto?: string | null
     onboardingCompleted?: boolean
     provider?: string | null
@@ -5565,6 +5832,10 @@ export namespace Prisma {
     city?: string | null
     qualification?: string | null
     companyName?: string | null
+    designation?: string | null
+    skills?: UserCreateskillsInput | string[]
+    yearsOfExperience?: number | null
+    workEmail?: string | null
     profilePhoto?: string | null
     onboardingCompleted?: boolean
     provider?: string | null
@@ -5599,6 +5870,10 @@ export namespace Prisma {
     city?: NullableStringFieldUpdateOperationsInput | string | null
     qualification?: NullableStringFieldUpdateOperationsInput | string | null
     companyName?: NullableStringFieldUpdateOperationsInput | string | null
+    designation?: NullableStringFieldUpdateOperationsInput | string | null
+    skills?: UserUpdateskillsInput | string[]
+    yearsOfExperience?: NullableIntFieldUpdateOperationsInput | number | null
+    workEmail?: NullableStringFieldUpdateOperationsInput | string | null
     profilePhoto?: NullableStringFieldUpdateOperationsInput | string | null
     onboardingCompleted?: BoolFieldUpdateOperationsInput | boolean
     provider?: NullableStringFieldUpdateOperationsInput | string | null
@@ -5617,6 +5892,10 @@ export namespace Prisma {
     city?: NullableStringFieldUpdateOperationsInput | string | null
     qualification?: NullableStringFieldUpdateOperationsInput | string | null
     companyName?: NullableStringFieldUpdateOperationsInput | string | null
+    designation?: NullableStringFieldUpdateOperationsInput | string | null
+    skills?: UserUpdateskillsInput | string[]
+    yearsOfExperience?: NullableIntFieldUpdateOperationsInput | number | null
+    workEmail?: NullableStringFieldUpdateOperationsInput | string | null
     profilePhoto?: NullableStringFieldUpdateOperationsInput | string | null
     onboardingCompleted?: BoolFieldUpdateOperationsInput | boolean
     provider?: NullableStringFieldUpdateOperationsInput | string | null

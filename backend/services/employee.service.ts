@@ -1,38 +1,25 @@
 import { prisma } from '../utils/prisma'
 
-
 /**
  * Creates a new employee record.
- * @param name - The full name of the employee.
- * @param userId - The ID of the user this employee record belongs to.
  */
 export async function createEmployee(name: string, userId: string) {
   return await prisma.employee.create({
-    data: {
-      name,
-      userId,
-    },
+    data: { name, userId },
   })
 }
 
 /**
- * Updates basic onboarding profile fields for an employee user.
+ * Updates basic onboarding profile fields for an employee user (Step 1).
  */
 export async function updateEmployeeProfile(
   userId: string,
   country: string,
-  qualification: string,
-  companyName?: string,
-  city?: string,
+  city: string,
 ) {
   return await prisma.user.update({
     where: { id: userId },
-    data: {
-      country,
-      qualification,
-      companyName: companyName || null,
-      city: city || null,
-    },
+    data: { country, city },
     select: {
       id: true,
       name: true,
@@ -42,8 +29,51 @@ export async function updateEmployeeProfile(
       city: true,
       qualification: true,
       companyName: true,
+      designation: true,
+      skills: true,
+      yearsOfExperience: true,
+      workEmail: true,
       profilePhoto: true,
       onboardingCompleted: true,
+      role: true,
+    },
+  })
+}
+
+/**
+ * Updates professional details for an employee user (Step 2).
+ */
+export async function updateEmployeeProfessional(
+  userId: string,
+  data: {
+    qualification: string
+    companyName: string
+    designation: string
+    skills: string[]
+    yearsOfExperience?: number
+    workEmail?: string
+  },
+) {
+  return await prisma.user.update({
+    where: { id: userId },
+    data: {
+      qualification: data.qualification,
+      companyName: data.companyName,
+      designation: data.designation,
+      skills: data.skills,
+      ...(data.yearsOfExperience !== undefined && { yearsOfExperience: data.yearsOfExperience }),
+      ...(data.workEmail && { workEmail: data.workEmail }),
+    },
+    select: {
+      id: true,
+      name: true,
+      email: true,
+      qualification: true,
+      companyName: true,
+      designation: true,
+      skills: true,
+      yearsOfExperience: true,
+      workEmail: true,
       role: true,
     },
   })

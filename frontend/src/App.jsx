@@ -12,6 +12,8 @@ import LoginPage from './pages/LoginPage'
 import EmployerOnboardingPage from './pages/EmployerOnboardingPage'
 import EmployeeOnboardingPage from './pages/EmployeeOnboardingPage'
 import EmployeeProfessionalPage from './pages/EmployeeProfessionalPage'
+import EmployeeEmployerPage from './pages/EmployeeEmployerPage'
+import EmployeeReviewPage from './pages/EmployeeReviewPage'
 import ProtectedRoute from './components/ProtectedRoute'
 
 function App() {
@@ -37,6 +39,22 @@ function App() {
             element={(
               <ProtectedRoute>
                 <EmployeeProfessionalPage />
+              </ProtectedRoute>
+            )}
+          />
+          <Route
+            path="/employee/employer-details"
+            element={(
+              <ProtectedRoute>
+                <EmployeeEmployerPage />
+              </ProtectedRoute>
+            )}
+          />
+          <Route
+            path="/employee/review"
+            element={(
+              <ProtectedRoute>
+                <EmployeeReviewPage />
               </ProtectedRoute>
             )}
           />
