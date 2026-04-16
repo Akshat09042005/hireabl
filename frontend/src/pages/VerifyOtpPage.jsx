@@ -11,12 +11,11 @@ const BACKEND_URL =
   import.meta.env.VITE_BACKEND_URL || 'http://localhost:5051'
 const RESEND_COOLDOWN_SECONDS = 120
 
-/** Digits only → +91 + last 10 digits */
-function toIndiaE164(raw) {
-  const d = String(raw || '').replace(/\D/g, '')
-  let rest = d.startsWith('91') ? d.slice(2) : d
-  rest = rest.slice(0, 10)
-  return rest.length === 10 ? `+91${rest}` : ''
+import { Country } from 'country-state-city'
+
+/** Digits only validation for any phone number */
+function cleanPhone(raw) {
+  return String(raw || '').replace(/\D/g, '')
 }
 
 function VerifyOtpPage() {
@@ -25,7 +24,8 @@ function VerifyOtpPage() {
   const nextPath = searchParams.get('next') || '/dashboard'
   const { token } = useAuth()
 
-  const [phone, setPhone] = useState('+91')
+  const [countryIsoCode, setCountryIsoCode] = useState('IN')
+  const [phone, setPhone] = useState('')
   const [otp, setOtp] = useState(Array(OTP_LENGTH).fill(''))
   const inputRefs = useRef([])
 
@@ -100,12 +100,15 @@ function VerifyOtpPage() {
   }, [])
 
   const handleSendOtp = async () => {
-    const normalized = toIndiaE164(phone)
-    if (!normalized) {
-      setPhoneError('Enter a valid 10-digit mobile number')
+    const digits = cleanPhone(phone)
+    if (digits.length < 6 || digits.length > 15) {
+      setPhoneError('Enter a valid mobile number')
       return
     }
-    setPhone(normalized)
+    const selectedCountry = Country.getCountryByCode(countryIsoCode)
+    const normalized = `+${selectedCountry.phonecode}${digits}`
+    // We keep storing the raw digits in phone state, or we can format it.
+    // However, the backend expects the full E164 number.
 
     try {
       setSendingOtp(true)
@@ -154,7 +157,7 @@ function VerifyOtpPage() {
           'Content-Type': 'application/json',
           ...(token ? { Authorization: `Bearer ${token}` } : {}),
         },
-        body: JSON.stringify({ phone, otp: otpValue }),
+        body: JSON.stringify({ phone: `+${Country.getCountryByCode(countryIsoCode).phonecode}${cleanPhone(phone)}`, otp: otpValue }),
       })
       if (!res.ok) {
         const msg = await getErrorMessage(res, 'Unable to process request. Please try again')
@@ -177,9 +180,8 @@ function VerifyOtpPage() {
   }
 
   const handlePhoneChange = (e) => {
-    const digits = e.target.value.replace(/\D/g, '')
-    const after91 = digits.startsWith('91') ? digits.slice(2) : digits
-    setPhone(`+91${after91.slice(0, 10)}`)
+    const digits = cleanPhone(e.target.value)
+    setPhone(digits.slice(0, 15)) // reasonable limit
     setPhoneError('')
   }
 
@@ -221,12 +223,23 @@ function VerifyOtpPage() {
             {!otpSent ? (
               <div className="mt-[28px]">
                 <div className="w-full mb-[20px] text-left">
-                  <div className="relative w-full">
-                    <Phone className="absolute left-[14px] top-[52%] -translate-y-1/2 text-[#9ca3af] pointer-events-none" size={20} />
+                  <div className="relative flex w-full border border-[#e5e7eb] rounded-[12px] bg-[#f9fafb] focus-within:border-[#2563eb] focus-within:shadow-[0_0_0_4px_rgba(37,99,235,0.1)] transition-all duration-200 overflow-hidden">
+                    <select
+                      className="bg-transparent border-r border-[#e5e7eb] py-[12px] px-[14px] text-[16px] text-[#111827] outline-none max-w-[120px]"
+                      value={countryIsoCode}
+                      onChange={(e) => setCountryIsoCode(e.target.value)}
+                      disabled={sendingOtp}
+                    >
+                      {Country.getAllCountries().map((c) => (
+                        <option key={c.isoCode} value={c.isoCode}>
+                          {c.isoCode} (+{c.phonecode})
+                        </option>
+                      ))}
+                    </select>
                     <input
-                      className="w-full h-[52px] pt-[12px] pr-[14px] pb-[12px] pl-[42px] border border-[#e5e7eb] rounded-[12px] text-[16px] text-[#111827] bg-[#f9fafb] transition-all duration-200 ease-in-out focus:outline-none focus:border-[#2563eb] focus:bg-white focus:shadow-[0_0_0_4px_rgba(37,99,235,0.1)]"
+                      className="w-full h-[52px] pt-[12px] pr-[14px] pb-[12px] pl-[14px] text-[16px] text-[#111827] bg-transparent outline-none"
                       type="tel"
-                      placeholder="+91 Mobile number"
+                      placeholder="Mobile number"
                       value={phone}
                       onChange={handlePhoneChange}
                       disabled={sendingOtp}
@@ -246,7 +259,7 @@ function VerifyOtpPage() {
             ) : (
               <div className="mt-[28px]">
                 <div className="mb-[24px] text-[14px] text-[#6b7280] flex justify-center items-center gap-[8px]">
-                  <p className="m-0">Code sent to <strong>{phone}</strong></p>
+                  <p className="m-0">Code sent to <strong>+{Country.getCountryByCode(countryIsoCode).phonecode} {phone}</strong></p>
                   <button className="bg-none border-none text-[#2563eb] font-semibold underline cursor-pointer text-[14px]" onClick={() => setOtpSent(false)}>Edit</button>
                 </div>
 

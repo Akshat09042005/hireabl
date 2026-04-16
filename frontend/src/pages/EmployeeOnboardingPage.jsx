@@ -1,14 +1,15 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Loader2, Pencil, X } from 'lucide-react'
+import { Loader2, Pencil, X, Check, CheckCircle2 } from 'lucide-react'
 import { useAuth } from '../context/AuthContext'
 import { getErrorMessage } from '../utils/apiError'
 
-const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || 'http://localhost:5051'
+import { Country, City } from 'country-state-city'
 
 function EmployeeOnboardingPage() {
   const navigate = useNavigate()
   const { token, user: authUser } = useAuth()
+
 
   useEffect(() => {
     if (!authUser) return
@@ -20,19 +21,47 @@ function EmployeeOnboardingPage() {
   const [profile, setProfile] = useState({
     name: '',
     email: '',
+    phoneCode: '+91',
     phone: '',
     country: '',
     city: '',
     profilePhoto: '',
   })
+
+  
+  const COUNTRY_CITIES = {
+    "India": ["Delhi", "Mumbai", "Bangalore", "Hyderabad", "Pune", "Chennai", "Kolkata"],
+    "United States": ["New York", "San Francisco", "Los Angeles", "Chicago", "Austin", "Seattle"],
+    "United Kingdom": ["London", "Manchester", "Birmingham", "Edinburgh", "Glasgow"],
+    "Canada": ["Toronto", "Vancouver", "Montreal", "Calgary", "Ottawa"],
+    "Australia": ["Sydney", "Melbourne", "Brisbane", "Perth", "Adelaide"],
+    "Germany": ["Berlin", "Munich", "Frankfurt", "Hamburg", "Cologne"],
+    "Singapore": ["Singapore"],
+    "United Arab Emirates": ["Dubai", "Abu Dhabi", "Sharjah"],
+    "Other": []
+  };
+
+  const PHONE_CODES = [
+    { code: '+91', country: '🇮🇳 +91 (India)' },
+    { code: '+1', country: '🇺🇸 +1 (US/CA)' },
+    { code: '+44', country: '🇬🇧 +44 (UK)' },
+    { code: '+61', country: '🇦🇺 +61 (AU)' },
+    { code: '+49', country: '🇩🇪 +49 (DE)' },
+    { code: '+65', country: '🇸🇬 +65 (SG)' },
+    { code: '+971', country: '🇦🇪 +971 (UAE)' }
+  ];
   const [resumeFile, setResumeFile] = useState(null)
   const [isDragOver, setIsDragOver] = useState(false)
   const [loadingProfile, setLoadingProfile] = useState(true)
   const [submitting, setSubmitting] = useState(false)
+  const [isParsing, setIsParsing] = useState(false)
   const [error, setError] = useState('')
   const [fieldErrors, setFieldErrors] = useState({})
   const fieldRefs = useRef({})
   const [editableName, setEditableName] = useState(false)
+
+  // Ensure these imports are before or after depending on how VITE works, handled.
+  const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || 'http://localhost:5051'
 
   const [showPhoneModal, setShowPhoneModal] = useState(false)
 
@@ -56,12 +85,36 @@ function EmployeeOnboardingPage() {
         }
         const data = await res.json()
         const dbUser = data?.data?.user || {}
+        let userPhone = dbUser.phone || '';
+        let userPhoneCode = '+91';
+        let userCountryIso = '';
+
+        // Extract phone code if any Matches known codes
+        if (userPhone.startsWith('+')) {
+          const allCountries = Country.getAllCountries();
+          const sortedCountries = [...allCountries].sort((a,b) => b.phonecode.length - a.phonecode.length);
+          for (const c of sortedCountries) {
+            if (userPhone.startsWith('+' + c.phonecode)) {
+              userPhoneCode = '+' + c.phonecode;
+              userPhone = userPhone.slice(c.phonecode.length + 1).trim();
+              userCountryIso = c.isoCode;
+              break;
+            }
+          }
+        }
+        
+        if (!userCountryIso && dbUser.country) {
+          const allCountries = Country.getAllCountries();
+          const match = allCountries.find(c => c.name === dbUser.country || c.isoCode === dbUser.country);
+          if (match) userCountryIso = match.isoCode;
+        }
         if (!cancelled) {
           setProfile({
             name: dbUser.name || '',
             email: dbUser.email || authUser?.email || '',
-            phone: dbUser.phone || '',
-            country: dbUser.country || '',
+            phoneCode: userPhoneCode,
+            phone: userPhone,
+            country: userCountryIso || '',
             city: dbUser.city || '',
             profilePhoto: dbUser.profilePhoto || '',
           })
@@ -139,15 +192,34 @@ function EmployeeOnboardingPage() {
     }
   }
 
+  const extractProfileDataFromText = (text) => {
+    const emailMatch = text.match(/[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/);
+    const phoneMatch = text.match(/(?:\+?\d{1,3}[\s-]?)?\(?\d{3}\)?[\s-]?\d{3}[\s-]?\d{4}/);
+    
+    // Basic heuristic: First distinct short line is often the name
+    const candidates = text.split('\n').map(l => l.trim()).filter(l => l.length > 2 && l.length < 30 && !/\d/.test(l));
+    const nameMatch = candidates.length > 0 ? candidates[0] : null;
+    
+    setProfile(prev => ({
+      ...prev,
+      email: prev.email || (emailMatch ? emailMatch[0] : prev.email),
+      phone: prev.phone || (phoneMatch ? cleanPhoneForProfile(phoneMatch[0]) : prev.phone),
+      name: prev.name || (nameMatch ? toTitleCase(nameMatch) : prev.name)
+    }));
+  }
+
   const validateAndSetResume = (file) => {
     if (!file) return
     const allowed = [
       'application/pdf',
       'application/msword',
       'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+      'image/png',
+      'image/jpeg',
+      'image/jpg'
     ]
     if (!allowed.includes(file.type)) {
-      setError('Please upload a valid resume file (PDF, DOC, or DOCX)')
+      setError('Please upload a valid resume file (PDF, DOC, DOCX, PNG, JPG)')
       return
     }
     if (file.size > 2 * 1024 * 1024) {
@@ -156,6 +228,68 @@ function EmployeeOnboardingPage() {
     }
     setResumeFile(file)
     if (error) setError('')
+    
+    // Auto-parse image-based resumes with Tesseract, and PDFs with pdfjs-dist
+    if (file.type.startsWith('image/')) {
+      parseResumeImage(file);
+    } else if (file.type === 'application/pdf') {
+       parseResumePDF(file);
+    }
+  }
+
+  const parseResumeImage = async (file) => {
+    try {
+      setIsParsing(true)
+      const Tesseract = (await import('tesseract.js')).default;
+      const { data: { text } } = await Tesseract.recognize(file, 'eng');
+      extractProfileDataFromText(text);
+    } catch (err) {
+      console.error('Tesseract parsing failed:', err);
+    } finally {
+      setIsParsing(false)
+    }
+  }
+
+  const parseResumePDF = async (file) => {
+    try {
+      setIsParsing(true)
+      const pdfjsLib = await import('pdfjs-dist');
+      pdfjsLib.GlobalWorkerOptions.workerSrc = `//unpkg.com/pdfjs-dist@${pdfjsLib.version}/build/pdf.worker.min.mjs`;
+
+      const buffer = await file.arrayBuffer();
+      const pdf = await pdfjsLib.getDocument(buffer).promise;
+      let fullText = '';
+      
+      for (let i = 1; i <= pdf.numPages; i++) {
+        const page = await pdf.getPage(i);
+        const textContent = await page.getTextContent();
+        
+        let lastY = -1;
+        const pageStrings = textContent.items.map(item => {
+           const currentY = item.transform ? item.transform[5] : 0;
+           let prefix = '';
+           if (lastY !== -1 && Math.abs(currentY - lastY) > 5) {
+               prefix = '\n';
+           }
+           lastY = currentY;
+           return prefix + item.str;
+        });
+        fullText += pageStrings.join('') + '\n';
+      }
+      
+      extractProfileDataFromText(fullText);
+    } catch (err) {
+      console.error('PDF parsing failed:', err);
+    } finally {
+      setIsParsing(false)
+    }
+  }
+
+  // Helper to clean extracted phone numbers to 10 digits if possible
+  const cleanPhoneForProfile = (raw) => {
+    const digits = raw.replace(/\D/g, '');
+    if (digits.length >= 10) return digits.slice(-10);
+    return digits;
   }
 
   const handleResumeChange = (e) => validateAndSetResume(e.target.files?.[0])
@@ -169,10 +303,11 @@ function EmployeeOnboardingPage() {
 
   const handleSubmit = async (e) => {
     e.preventDefault()
+    const fullPhone = `${profile.phoneCode} ${profile.phone}`.trim()
     const payload = {
       name: toTitleCase(profile.name.trim()),
       email: profile.email.trim(),
-      phone: profile.phone.trim(),
+      phone: fullPhone,
       country: profile.country.trim(),
       city: profile.city.trim(),
     }
@@ -229,8 +364,21 @@ function EmployeeOnboardingPage() {
   return (
     <div className="min-h-screen bg-[#f6f8fb] font-['Inter']">
       {/* Top Header Strip */}
-      <header className="w-full bg-white border-b border-[#e5e7eb] h-20 flex items-center justify-between px-10">
-        <img src="/logo.jpg" alt="Hireabl" className="h-12 w-auto object-contain rounded" />
+      <header className="w-full bg-white flex items-center justify-between px-8 py-4 shadow-[0_2px_10px_rgba(0,0,0,0.03)] mb-8">
+        <div className="flex items-center gap-3">
+          <img src="/logo-nobg.png" alt="Hireabl Logo" className="h-10 w-auto object-contain" />
+          <span className="text-2xl font-[poppins] font-medium text-blue-700 tracking-tight cursor-default">hireabl</span>
+        </div>
+        <div className="text-sm font-medium text-[#4b5563]">
+          Already registered?{' '}
+          <button 
+            type="button" 
+            onClick={() => navigate('/signup')} 
+            className="text-[#2563eb] font-semibold hover:underline"
+          >
+            Login here
+          </button>
+        </div>
       </header>
 
       {/* Phone Confirmation Modal */}
@@ -266,183 +414,184 @@ function EmployeeOnboardingPage() {
       )}
 
       {/* Page content */}
-      <main className="flex items-start justify-center min-h-[calc(100vh-80px)] py-8 px-4">
-        <section className="w-full max-w-lg bg-white rounded-xl shadow-md p-6 md:p-8">
-
-          {/* Step indicator */}
-          <div className="text-center mb-1">
-            <h1 className="text-xl md:text-2xl font-semibold text-[#111827]">
-              {loadingProfile ? 'Welcome!' : `Welcome, ${displayName.split(' ')[0]} 👋`}
-            </h1>
-            <p className="text-xs text-[#9ca3af] mt-0.5">Step 1 of 4 · Basic Info</p>
-          </div>
-
-          {/* Progress bar */}
-          <div className="mt-4 mb-6">
-            <div className="flex justify-between text-xs text-[#6b7280] mb-1.5">
-              <span>Profile Completion</span>
-              <span className="font-semibold text-[#2563eb]">{completion}%</span>
-            </div>
-            <div className="w-full bg-[#e5e7eb] rounded-full h-1.5">
-              <div
-                className="bg-[#2563eb] h-1.5 rounded-full transition-all duration-300"
-                style={{ width: `${completion}%` }}
-              />
-            </div>
-          </div>
-
-          <form className="space-y-4" onSubmit={handleSubmit}>
-
-            {/* Resume Upload */}
-            <div>
-              <label className="block text-sm font-medium text-[#111827] mb-1">
-                Resume <span className="text-red-500">*</span>
-              </label>
-              <label
-                ref={setFieldRef('resume')}
-                className={`flex flex-col items-center justify-center w-full rounded-lg border-2 border-dashed px-4 py-4 cursor-pointer transition-colors duration-200 ${
-                  isDragOver
-                    ? 'border-[#2563eb] bg-[#eff6ff]'
-                    : resumeFile
-                    ? 'border-[#2563eb] bg-[#f0fdf4]'
-                    : 'border-[#d1d5db] bg-[#f9fafb] hover:border-[#2563eb] hover:bg-[#f8faff]'
-                }`}
-                onDragOver={handleDragOver}
-                onDragLeave={handleDragLeave}
-                onDrop={handleDrop}
-              >
-                {resumeFile ? (
-                  <>
-                    <span className="text-2xl mb-1">📄</span>
-                    <p className="text-sm font-medium text-[#2563eb] truncate max-w-full">{resumeFile.name}</p>
-                    <p className="text-xs text-[#6b7280] mt-0.5">{(resumeFile.size / 1024).toFixed(1)} KB · Click to replace</p>
-                  </>
-                ) : (
-                  <>
-                    <span className="text-2xl mb-1">📂</span>
-                    <p className="text-sm font-medium text-[#374151]">Drag & drop your resume here</p>
-                    <p className="text-xs text-[#6b7280] mt-0.5">or <span className="text-[#2563eb] underline">browse files</span> · PDF, DOC, DOCX · Max 2 MB</p>
-                  </>
-                )}
-                <input type="file" accept=".pdf,.doc,.docx" className="hidden" onChange={handleResumeChange} />
-              </label>
-              {fieldErrors.resume && <p className="mt-1 text-sm text-[#b42318]">{fieldErrors.resume}</p>}
+      <main className="flex justify-center w-full max-w-[1050px] mx-auto px-6 pb-16">
+        <div className="flex flex-col md:flex-row w-full bg-white rounded-[24px] shadow-sm overflow-hidden min-h-[600px] border border-[#f1f1f1]">
+          
+          {/* Left Form Section */}
+          <section className="flex-1 w-full p-8 md:p-12 lg:p-14 flex flex-col justify-center">
+            
+            <div className="mb-10 text-center">
+              <h1 className="text-[32px] font-bold text-[#111827] mb-3">Welcome!</h1>
+              <p className="text-[14px] text-[#6b7280]">
+                Build your profile and let companies rate you on <span className="font-semibold text-black">Hireabl</span>. Get started for free.
+              </p>
             </div>
 
-            {/* Name */}
-            <div>
-              <label className="block text-sm font-medium text-[#374151] mb-1">
-                Name <span className="text-red-500">*</span>
-              </label>
-              <div className="relative">
-                <input
-                  ref={setFieldRef('name')}
-                  className={`w-full rounded-lg border px-3 py-2.5 pr-10 text-sm outline-none transition-colors duration-200 ${
-                    editableName
-                      ? 'border-[#2563eb] bg-white text-[#111827]'
-                      : 'border-[#d1d5db] bg-[#f3f4f6] text-[#6b7280]'
-                  } ${fieldErrors.name ? '!border-[#ef4444]' : ''}`}
-                  value={profile.name}
-                  onChange={handleChange('name')}
-                  onBlur={handleNameBlur}
-                  placeholder="Enter your full name"
-                  disabled={!editableName}
-                />
-                <button
-                  type="button"
-                  onClick={() => setEditableName(true)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-[#9ca3af] hover:text-[#2563eb]"
-                  aria-label="Edit name"
-                >
-                  <Pencil size={16} />
-                </button>
+            <form className="space-y-4" onSubmit={handleSubmit}>
+
+              {/* Resume Upload */}
+              <div>
+                <div className="flex items-center gap-4">
+                  <label
+                    ref={setFieldRef('resume')}
+                    className={`flex items-center justify-center px-6 py-3.5 bg-white border border-[#d1d5db] rounded-full text-[14px] font-medium text-[#374151] hover:bg-[#f9fafb] cursor-pointer transition-colors duration-200 focus-within:ring-2 focus-within:ring-black ${fieldErrors.resume ? 'border-[#ef4444]' : ''} ${isParsing ? 'opacity-70 cursor-wait' : ''}`}
+                  >
+                    <span className="mr-2">{isParsing ? '⏳' : '📄'}</span> {isParsing ? 'Parsing...' : resumeFile ? 'Replace Resume' : 'Upload Resume'}
+                    <input type="file" accept=".pdf,.doc,.docx,.png,.jpg,.jpeg" className="hidden" onChange={handleResumeChange} disabled={isParsing} />
+                  </label>
+                  {resumeFile && (
+                    <div className="text-sm font-medium text-black truncate max-w-[180px]">
+                      {resumeFile.name}
+                    </div>
+                  )}
+                </div>
+                {fieldErrors.resume && <p className="mt-1 text-[13px] text-[#b42318] px-3">{fieldErrors.resume}</p>}
+                {!resumeFile && !fieldErrors.resume && <p className="mt-1.5 flex items-center text-[12px] text-[#9ca3af] px-3">PDF, DOCX, or Images up to 2MB (Images Auto-Parsed)</p>}
               </div>
-              {fieldErrors.name && <p className="mt-1 text-sm text-[#b42318]">{fieldErrors.name}</p>}
-            </div>
 
-            {/* Email — locked */}
-            <div>
-              <label className="block text-sm font-medium text-[#374151] mb-1">Email</label>
-              <input
-                className="w-full rounded-lg border border-[#d1d5db] bg-[#f3f4f6] px-3 py-2.5 text-sm text-[#6b7280] outline-none cursor-not-allowed"
-                value={profile.email}
-                placeholder="Email"
-                disabled
-                readOnly
-              />
-            </div>
+              {/* Name */}
+              <div>
+                <div className="relative">
+                  <input
+                    ref={setFieldRef('name')}
+                    className={`w-full rounded-full border px-6 py-3.5 pr-10 text-[14px] outline-none transition-colors duration-200 placeholder:text-[#9ca3af] ${
+                      editableName
+                        ? 'border-[#d1d5db] bg-white text-[#111827] focus:border-black'
+                        : 'border-[#d1d5db] bg-[#f9fafb] text-[#6b7280]'
+                    } ${fieldErrors.name ? '!border-[#ef4444]' : ''}`}
+                    value={profile.name}
+                    onChange={handleChange('name')}
+                    onBlur={handleNameBlur}
+                    placeholder="Full Name"
+                    disabled={!editableName}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setEditableName(true)}
+                    className="absolute right-4 top-1/2 -translate-y-1/2 text-[#9ca3af] hover:text-black"
+                    aria-label="Edit name"
+                  >
+                    <Pencil size={16} />
+                  </button>
+                </div>
+                {fieldErrors.name && <p className="mt-1 text-[13px] text-[#b42318] px-3">{fieldErrors.name}</p>}
+              </div>
 
-            {/* Phone */}
-            <div>
-              <label className="block text-sm font-medium text-[#374151] mb-1">
-                Phone <span className="text-red-500">*</span>
-              </label>
-              <div className="relative">
+              {/* Email — locked */}
+              <div>
                 <input
-                  className="w-full rounded-lg border border-[#d1d5db] bg-[#f3f4f6] px-3 py-2.5 pr-10 text-sm text-[#6b7280] outline-none"
-                  value={profile.phone}
-                  placeholder="+91XXXXXXXXXX"
+                  className="w-full rounded-full border border-[#d1d5db] bg-[#f9fafb] px-6 py-3.5 text-[14px] text-[#6b7280] placeholder:text-[#9ca3af] outline-none cursor-not-allowed"
+                  value={profile.email}
+                  placeholder="Email Address"
                   disabled
                   readOnly
                 />
+              </div>
+
+              {/* Phone */}
+              <div>
+                <div className="relative flex rounded-full border border-[#d1d5db] bg-[#f9fafb] focus-within:border-black transition-colors overflow-hidden">
+                  <div className="bg-transparent border-r border-[#d1d5db] py-3.5 pl-6 pr-3 text-[14px] text-[#6b7280] flex items-center shrink-0">
+                    {profile.phoneCode}
+                  </div>
+                  <input
+                    className="w-full bg-transparent px-3 py-3.5 pr-11 text-[14px] text-[#6b7280] placeholder:text-[#9ca3af] outline-none cursor-not-allowed"
+                    value={profile.phone}
+                    onChange={handleChange('phone')}
+                    placeholder="Phone Number"
+                    disabled
+                    readOnly
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPhoneModal(true)}
+                    className="absolute right-4 top-1/2 -translate-y-1/2 text-[#9ca3af] hover:text-black"
+                    aria-label="Change phone number"
+                  >
+                    <Pencil size={16} />
+                  </button>
+                </div>
+              </div>
+
+              {/* Country + City */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <select
+                    ref={setFieldRef('country')}
+                    className={`w-full rounded-full border bg-white px-6 py-3.5 text-[14px] text-[#111827] outline-none focus:border-black transition-colors duration-200 cursor-pointer appearance-none ${fieldErrors.country ? 'border-[#ef4444]' : 'border-[#d1d5db]'}`}
+                    value={profile.country}
+                    onChange={(e) => {
+                      setProfile(prev => ({ ...prev, country: e.target.value, city: '' }));
+                      if (fieldErrors.country) setFieldErrors(prev => ({ ...prev, country: '' }));
+                    }}
+                  >
+                    <option value="" disabled>Select Country</option>
+                    {Country.getAllCountries().map(country => (
+                      <option key={country.isoCode} value={country.isoCode}>{country.name}</option>
+                    ))}
+                  </select>
+                  {fieldErrors.country && <p className="mt-1 text-[13px] text-[#b42318] px-3">{fieldErrors.country}</p>}
+                </div>
+
+                <div>
+                  {profile.country && City.getCitiesOfCountry(profile.country)?.length > 0 ? (
+                    <select
+                      ref={setFieldRef('city')}
+                      className={`w-full rounded-full border bg-white px-6 py-3.5 text-[14px] text-[#111827] outline-none focus:border-black transition-colors duration-200 cursor-pointer appearance-none ${fieldErrors.city ? 'border-[#ef4444]' : 'border-[#d1d5db]'}`}
+                      value={profile.city}
+                      onChange={handleChange('city')}
+                    >
+                      <option value="" disabled>Select City</option>
+                      {City.getCitiesOfCountry(profile.country).map((city, i) => (
+                        <option key={`${city.name}-${i}`} value={city.name}>{city.name}</option>
+                      ))}
+                    </select>
+                  ) : (
+                    <input
+                      ref={setFieldRef('city')}
+                      className={`w-full rounded-full border bg-white px-6 py-3.5 text-[14px] placeholder:text-[#9ca3af] text-[#111827] outline-none focus:border-black transition-colors duration-200 appearance-none ${fieldErrors.city ? 'border-[#ef4444]' : 'border-[#d1d5db]'}`}
+                      value={profile.city}
+                      onChange={handleChange('city')}
+                      placeholder="City"
+                    />
+                  )}
+                  {fieldErrors.city && <p className="mt-1 text-[13px] text-[#b42318] px-3">{fieldErrors.city}</p>}
+                </div>
+              </div>
+
+              {error && <p className="text-sm text-[#b42318] text-center">{error}</p>}
+
+              <div className="pt-4">
                 <button
-                  type="button"
-                  onClick={() => setShowPhoneModal(true)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-[#9ca3af] hover:text-[#2563eb]"
-                  aria-label="Change phone number"
+                  type="submit"
+                  disabled={isContinueDisabled || submitting}
+                  className="w-full rounded-full bg-black px-6 py-4 text-[15px] font-semibold text-white transition hover:bg-[#222222] disabled:cursor-not-allowed disabled:opacity-50"
                 >
-                  <Pencil size={16} />
+                  {submitting ? (
+                    <span className="inline-flex items-center justify-center gap-2">
+                      <Loader2 size={18} className="animate-spin" />
+                      Saving...
+                    </span>
+                  ) : loadingProfile ? 'Loading...' : 'Save & Continue'}
                 </button>
               </div>
-            </div>
 
-            {/* Country + City */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              <div>
-                <label className="block text-sm font-medium text-[#111827] mb-1">
-                  Country <span className="text-red-500">*</span>
-                </label>
-                <input
-                  ref={setFieldRef('country')}
-                  className={`w-full rounded-lg border bg-white px-3 py-2.5 text-sm text-[#111827] outline-none focus:border-[#2563eb] transition-colors duration-200 ${fieldErrors.country ? 'border-[#ef4444]' : 'border-[#d1d5db]'}`}
-                  value={profile.country}
-                  onChange={handleChange('country')}
-                  placeholder="Country"
-                />
-                {fieldErrors.country && <p className="mt-1 text-sm text-[#b42318]">{fieldErrors.country}</p>}
-              </div>
+            </form>
+          </section>
+          
+          {/* Right Illustration Section */}
+          <aside className="hidden lg:flex flex-col items-center justify-center w-[48%] bg-[#f5fbf7] p-12">
+            <img 
+              src="/onboarding_meditation.png" 
+              alt="Illustration" 
+              className="w-full max-w-[380px] h-auto object-contain mix-blend-multiply mb-12" 
+            />
+            <h2 className="text-[24px] leading-[1.3] font-medium text-[#111827] text-center w-full max-w-[340px]">
+              Build your profile and let companies rate you on <span className="font-extrabold">Hireabl</span>
+            </h2>
+          </aside>
 
-              <div>
-                <label className="block text-sm font-medium text-[#111827] mb-1">
-                  City <span className="text-red-500">*</span>
-                </label>
-                <input
-                  ref={setFieldRef('city')}
-                  className={`w-full rounded-lg border bg-white px-3 py-2.5 text-sm text-[#111827] outline-none focus:border-[#2563eb] transition-colors duration-200 ${fieldErrors.city ? 'border-[#ef4444]' : 'border-[#d1d5db]'}`}
-                  value={profile.city}
-                  onChange={handleChange('city')}
-                  placeholder="City"
-                />
-                {fieldErrors.city && <p className="mt-1 text-sm text-[#b42318]">{fieldErrors.city}</p>}
-              </div>
-            </div>
-
-            {error && <p className="text-sm text-[#b42318]">{error}</p>}
-
-            <button
-              type="submit"
-              disabled={isContinueDisabled}
-              className="w-full rounded-lg bg-[#2563eb] px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-[#1d4ed8] disabled:cursor-not-allowed disabled:bg-[#9ca3af]"
-            >
-              {submitting ? (
-                <span className="inline-flex items-center gap-2">
-                  <Loader2 size={16} className="animate-spin" />
-                  Saving...
-                </span>
-              ) : loadingProfile ? 'Loading...' : 'Save & Continue →'}
-            </button>
-          </form>
-        </section>
+        </div>
       </main>
     </div>
   )
