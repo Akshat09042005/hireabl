@@ -18,10 +18,19 @@ model User {
   phone      String?   @unique
   name       String?
   country    String?
+  state      String?
   city       String?
   qualification String?
   companyName String?
+  hrEmail     String?
+  managerEmail String?
+  ceoEmail    String?
   designation  String?
+  roleInCompany  String?
+  companyWebsite String?
+  industry       String?
+  companySize    String?
+  gstNumber      String?
   skills       String[] @default([])
   yearsOfExperience Int?
   workEmail    String?

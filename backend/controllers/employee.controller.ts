@@ -49,12 +49,14 @@ export async function updateEmployeeProfileController(
     }
 
     const country = String(req.body?.country || '').trim()
+    const state = String(req.body?.state || '').trim()
     const city = String(req.body?.city || '').trim()
 
     if (!country) return sendError(res, 'Country is required', 400, 'COUNTRY_REQUIRED')
+    if (!state)   return sendError(res, 'State is required', 400, 'STATE_REQUIRED')
     if (!city)    return sendError(res, 'City is required', 400, 'CITY_REQUIRED')
 
-    const user = await updateEmployeeProfile(userId, country, city)
+    const user = await updateEmployeeProfile(userId, country, state, city)
     return sendSuccess(res, 200, 'Employee profile updated successfully', { user })
   } catch (err) {
     next(err)
@@ -103,6 +105,65 @@ export async function updateEmployeeProfessionalController(
     })
 
     return sendSuccess(res, 200, 'Professional details updated successfully', { user })
+  } catch (err) {
+    next(err)
+  }
+}
+
+/**
+ * Step 3: Employer details & Verification Emails
+ * POST /api/v1/employee/employer-details
+ */
+export async function updateEmployeeEmployerController(
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) {
+  try {
+    const authReq = req as AuthenticatedRequest
+    const userId = authReq.user?.id
+
+    if (!userId) {
+      return sendError(res, 'Unauthorized', 401, 'UNAUTHORIZED')
+    }
+
+    const {
+      employerName,
+      hrEmail,
+      managerEmail,
+      ceoEmail,
+    } = req.body
+
+    const { prisma } = await import('../utils/prisma')
+    const { sendManagerVerificationEmail } = await import('../services/email.service')
+
+    const dbUser = await prisma.user.findUnique({ where: { id: userId } })
+    if (!dbUser) {
+      return sendError(res, 'User record not found', 404, 'USER_NOT_FOUND')
+    }
+
+    const updatedUser = await prisma.user.update({
+      where: { id: userId },
+      data: {
+        companyName: employerName || dbUser.companyName,
+        hrEmail: hrEmail || undefined,
+        managerEmail: managerEmail || undefined,
+        ceoEmail: ceoEmail || undefined,
+        onboardingCompleted: true,
+      },
+      include: { employee: true, employer: true }
+    })
+
+    const employeeName = updatedUser.name || 'An employee'
+
+    if (hrEmail) {
+      sendManagerVerificationEmail(hrEmail, employeeName, 'HR / Manager').catch(console.error)
+    }
+    if (managerEmail && managerEmail !== hrEmail) {
+      sendManagerVerificationEmail(managerEmail, employeeName, 'Manager').catch(console.error)
+    }
+
+    return sendSuccess(res, 200, 'Employer details saved and emails dispatched', { user: updatedUser })
   } catch (err) {
     next(err)
   }

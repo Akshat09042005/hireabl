@@ -4,19 +4,14 @@ import { Loader2, Pencil, X, Check, CheckCircle2 } from 'lucide-react'
 import { useAuth } from '../context/AuthContext'
 import { getErrorMessage } from '../utils/apiError'
 
-import { Country, City } from 'country-state-city'
+import { Country, State, City } from 'country-state-city'
 
 function EmployeeOnboardingPage() {
   const navigate = useNavigate()
   const { token, user: authUser } = useAuth()
 
 
-  useEffect(() => {
-    if (!authUser) return
-    if (authUser.role !== 'employee') {
-      navigate('/employer/onboarding', { replace: true })
-    }
-  }, [authUser, navigate])
+
 
   const [profile, setProfile] = useState({
     name: '',
@@ -24,32 +19,33 @@ function EmployeeOnboardingPage() {
     phoneCode: '+91',
     phone: '',
     country: '',
+    state: '',
     city: '',
     profilePhoto: '',
   })
 
   
-  const COUNTRY_CITIES = {
-    "India": ["Delhi", "Mumbai", "Bangalore", "Hyderabad", "Pune", "Chennai", "Kolkata"],
-    "United States": ["New York", "San Francisco", "Los Angeles", "Chicago", "Austin", "Seattle"],
-    "United Kingdom": ["London", "Manchester", "Birmingham", "Edinburgh", "Glasgow"],
-    "Canada": ["Toronto", "Vancouver", "Montreal", "Calgary", "Ottawa"],
-    "Australia": ["Sydney", "Melbourne", "Brisbane", "Perth", "Adelaide"],
-    "Germany": ["Berlin", "Munich", "Frankfurt", "Hamburg", "Cologne"],
-    "Singapore": ["Singapore"],
-    "United Arab Emirates": ["Dubai", "Abu Dhabi", "Sharjah"],
-    "Other": []
-  };
+  // const COUNTRY_CITIES = {
+  //   "India": ["Delhi", "Mumbai", "Bangalore", "Hyderabad", "Pune", "Chennai", "Kolkata"],
+  //   "United States": ["New York", "San Francisco", "Los Angeles", "Chicago", "Austin", "Seattle"],
+  //   "United Kingdom": ["London", "Manchester", "Birmingham", "Edinburgh", "Glasgow"],
+  //   "Canada": ["Toronto", "Vancouver", "Montreal", "Calgary", "Ottawa"],
+  //   "Australia": ["Sydney", "Melbourne", "Brisbane", "Perth", "Adelaide"],
+  //   "Germany": ["Berlin", "Munich", "Frankfurt", "Hamburg", "Cologne"],
+  //   "Singapore": ["Singapore"],
+  //   "United Arab Emirates": ["Dubai", "Abu Dhabi", "Sharjah"],
+  //   "Other": []
+  // };
 
-  const PHONE_CODES = [
-    { code: '+91', country: '🇮🇳 +91 (India)' },
-    { code: '+1', country: '🇺🇸 +1 (US/CA)' },
-    { code: '+44', country: '🇬🇧 +44 (UK)' },
-    { code: '+61', country: '🇦🇺 +61 (AU)' },
-    { code: '+49', country: '🇩🇪 +49 (DE)' },
-    { code: '+65', country: '🇸🇬 +65 (SG)' },
-    { code: '+971', country: '🇦🇪 +971 (UAE)' }
-  ];
+  // const PHONE_CODES = [
+  //   { code: '+91', country: '🇮🇳 +91 (India)' },
+  //   { code: '+1', country: '🇺🇸 +1 (US/CA)' },
+  //   { code: '+44', country: '🇬🇧 +44 (UK)' },
+  //   { code: '+61', country: '🇦🇺 +61 (AU)' },
+  //   { code: '+49', country: '🇩🇪 +49 (DE)' },
+  //   { code: '+65', country: '🇸🇬 +65 (SG)' },
+  //   { code: '+971', country: '🇦🇪 +971 (UAE)' }
+  // ];
   const [resumeFile, setResumeFile] = useState(null)
   const [isDragOver, setIsDragOver] = useState(false)
   const [loadingProfile, setLoadingProfile] = useState(true)
@@ -164,7 +160,7 @@ function EmployeeOnboardingPage() {
       submitting ||
       loadingProfile ||
       !profile.name.trim() ||
-      !profile.phone.trim() ||
+      // !profile.phone.trim() ||
       !profile.country.trim() ||
       !profile.city.trim() ||
       !resumeFile
@@ -309,19 +305,21 @@ function EmployeeOnboardingPage() {
       email: profile.email.trim(),
       phone: fullPhone,
       country: profile.country.trim(),
+      state: profile.state.trim(),
       city: profile.city.trim(),
     }
 
     const nextFieldErrors = {}
     if (!payload.name)    nextFieldErrors.name = 'Name is required'
-    if (!payload.phone)   nextFieldErrors.phone = 'Phone is required'
+    // if (!payload.phone)   nextFieldErrors.phone = 'Phone is required'
     if (!payload.country) nextFieldErrors.country = 'Country is required'
+    if (!payload.state)   nextFieldErrors.state = 'State is required'
     if (!payload.city)    nextFieldErrors.city = 'City is required'
     if (!resumeFile)      nextFieldErrors.resume = 'Resume is required'
 
     if (Object.keys(nextFieldErrors).length > 0) {
       setFieldErrors(nextFieldErrors)
-      const firstErrorField = ['name', 'phone', 'country', 'city', 'resume'].find((k) => nextFieldErrors[k])
+      const firstErrorField = ['name', 'phone', 'country', 'state', 'city', 'resume'].find((k) => nextFieldErrors[k])
       if (firstErrorField && fieldRefs.current[firstErrorField]) {
         fieldRefs.current[firstErrorField].scrollIntoView({ behavior: 'smooth', block: 'center' })
         fieldRefs.current[firstErrorField].focus()
@@ -427,6 +425,18 @@ function EmployeeOnboardingPage() {
               </p>
             </div>
 
+            {/* Stepper Indicator */}
+            <div className="flex items-center justify-center mb-8">
+              {[1, 2, 3, 4].map((s) => (
+                <div key={s} className="flex items-center">
+                  <div className={`w-8 h-8 rounded-full flex items-center justify-center text-[14px] font-bold ${s === 1 ? 'bg-black text-white' : s < 1 ? 'bg-black text-white' : 'bg-gray-100 text-gray-400'}`}>
+                    {s < 1 ? <Check size={16} /> : s}
+                  </div>
+                  {s < 4 && <div className={`w-6 sm:w-10 h-1 mx-2 rounded-full ${s < 1 ? 'bg-black' : 'bg-gray-100'}`} />}
+                </div>
+              ))}
+            </div>
+
             <form className="space-y-4" onSubmit={handleSubmit}>
 
               {/* Resume Upload */}
@@ -513,19 +523,19 @@ function EmployeeOnboardingPage() {
                 </div>
               </div>
 
-              {/* Country + City */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              {/* Country + State + City */}
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                 <div>
                   <select
                     ref={setFieldRef('country')}
-                    className={`w-full rounded-full border bg-white px-6 py-3.5 text-[14px] text-[#111827] outline-none focus:border-black transition-colors duration-200 cursor-pointer appearance-none ${fieldErrors.country ? 'border-[#ef4444]' : 'border-[#d1d5db]'}`}
+                    className={`w-full rounded-full border bg-white px-5 py-3.5 text-[14px] text-[#111827] outline-none focus:border-black transition-colors duration-200 cursor-pointer appearance-none ${fieldErrors.country ? 'border-[#ef4444]' : 'border-[#d1d5db]'}`}
                     value={profile.country}
                     onChange={(e) => {
-                      setProfile(prev => ({ ...prev, country: e.target.value, city: '' }));
+                      setProfile(prev => ({ ...prev, country: e.target.value, state: '', city: '' }));
                       if (fieldErrors.country) setFieldErrors(prev => ({ ...prev, country: '' }));
                     }}
                   >
-                    <option value="" disabled>Select Country</option>
+                    <option value="" disabled>Country</option>
                     {Country.getAllCountries().map(country => (
                       <option key={country.isoCode} value={country.isoCode}>{country.name}</option>
                     ))}
@@ -534,14 +544,54 @@ function EmployeeOnboardingPage() {
                 </div>
 
                 <div>
-                  {profile.country && City.getCitiesOfCountry(profile.country)?.length > 0 ? (
+                  {profile.country && State.getStatesOfCountry(profile.country)?.length > 0 ? (
+                    <select
+                      ref={setFieldRef('state')}
+                      className={`w-full rounded-full border bg-white px-5 py-3.5 text-[14px] text-[#111827] outline-none focus:border-black transition-colors duration-200 cursor-pointer appearance-none ${fieldErrors.state ? 'border-[#ef4444]' : 'border-[#d1d5db]'}`}
+                      value={profile.state}
+                      onChange={(e) => {
+                        setProfile(prev => ({ ...prev, state: e.target.value, city: '' }));
+                        if (fieldErrors.state) setFieldErrors(prev => ({ ...prev, state: '' }));
+                      }}
+                    >
+                      <option value="" disabled>State</option>
+                      {State.getStatesOfCountry(profile.country).map((st) => (
+                        <option key={st.isoCode} value={st.isoCode}>{st.name}</option>
+                      ))}
+                    </select>
+                  ) : (
+                    <input
+                      ref={setFieldRef('state')}
+                      className={`w-full rounded-full border bg-white px-5 py-3.5 text-[14px] placeholder:text-[#111827] text-[#111827] outline-none focus:border-black transition-colors duration-200 appearance-none ${fieldErrors.state ? 'border-[#ef4444]' : 'border-[#d1d5db]'}`}
+                      value={profile.state}
+                      onChange={handleChange('state')}
+                      placeholder="State"
+                    />
+                  )}
+                  {fieldErrors.state && <p className="mt-1 text-[13px] text-[#b42318] px-3">{fieldErrors.state}</p>}
+                </div>
+
+                <div>
+                  {profile.country && profile.state && State.getStatesOfCountry(profile.country)?.length > 0 ? (
                     <select
                       ref={setFieldRef('city')}
-                      className={`w-full rounded-full border bg-white px-6 py-3.5 text-[14px] text-[#111827] outline-none focus:border-black transition-colors duration-200 cursor-pointer appearance-none ${fieldErrors.city ? 'border-[#ef4444]' : 'border-[#d1d5db]'}`}
+                      className={`w-full rounded-full border bg-white px-5 py-3.5 text-[14px] text-[#111827] outline-none focus:border-black transition-colors duration-200 cursor-pointer appearance-none ${fieldErrors.city ? 'border-[#ef4444]' : 'border-[#d1d5db]'}`}
                       value={profile.city}
                       onChange={handleChange('city')}
                     >
-                      <option value="" disabled>Select City</option>
+                      <option value="" disabled>City</option>
+                      {City.getCitiesOfState(profile.country, profile.state).map((city, i) => (
+                        <option key={`${city.name}-${i}`} value={city.name}>{city.name}</option>
+                      ))}
+                    </select>
+                  ) : profile.country && (!profile.state || State.getStatesOfCountry(profile.country)?.length === 0) ? (
+                    <select
+                      ref={setFieldRef('city')}
+                      className={`w-full rounded-full border bg-white px-5 py-3.5 text-[14px] text-[#111827] outline-none focus:border-black transition-colors duration-200 cursor-pointer appearance-none ${fieldErrors.city ? 'border-[#ef4444]' : 'border-[#d1d5db]'}`}
+                      value={profile.city}
+                      onChange={handleChange('city')}
+                    >
+                      <option value="" disabled>City</option>
                       {City.getCitiesOfCountry(profile.country).map((city, i) => (
                         <option key={`${city.name}-${i}`} value={city.name}>{city.name}</option>
                       ))}
@@ -549,7 +599,7 @@ function EmployeeOnboardingPage() {
                   ) : (
                     <input
                       ref={setFieldRef('city')}
-                      className={`w-full rounded-full border bg-white px-6 py-3.5 text-[14px] placeholder:text-[#9ca3af] text-[#111827] outline-none focus:border-black transition-colors duration-200 appearance-none ${fieldErrors.city ? 'border-[#ef4444]' : 'border-[#d1d5db]'}`}
+                      className={`w-full rounded-full border bg-white px-5 py-3.5 text-[14px] placeholder:text-[#111827] text-[#111827] outline-none focus:border-black transition-colors duration-200 appearance-none ${fieldErrors.city ? 'border-[#ef4444]' : 'border-[#d1d5db]'}`}
                       value={profile.city}
                       onChange={handleChange('city')}
                       placeholder="City"

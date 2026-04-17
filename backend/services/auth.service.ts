@@ -56,6 +56,19 @@ export async function findOrCreateOAuthUser(data: {
     }
   }
 
+  // Update role if explicitly requested a different role 
+  if (user && role && user.role !== role) {
+    console.log(`[auth.service] Updating role for user ${user.id} to ${role}`)
+    user = await prisma.user.update({
+      where: { id: user.id },
+      data: { role },
+      include: {
+        employee: true,
+        employer: true
+      }
+    })
+  }
+
   // 3. Create if still not found
   if (!user) {
     console.log(`[auth.service] Creating new user for role: ${role}`)

@@ -59,7 +59,7 @@ function App() {
             )}
           />
           <Route
-            path="/employer/*"
+            path="/employer/onboarding"
             element={(
               <ProtectedRoute>
                 <EmployerOnboardingPage />

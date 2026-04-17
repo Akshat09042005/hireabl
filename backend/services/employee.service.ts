@@ -15,17 +15,19 @@ export async function createEmployee(name: string, userId: string) {
 export async function updateEmployeeProfile(
   userId: string,
   country: string,
+  state: string,
   city: string,
 ) {
   return await prisma.user.update({
     where: { id: userId },
-    data: { country, city },
+    data: { country, state, city },
     select: {
       id: true,
       name: true,
       email: true,
       phone: true,
       country: true,
+      state: true,
       city: true,
       qualification: true,
       companyName: true,

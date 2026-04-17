@@ -15,6 +15,7 @@ import {
   createEmployeeController,
   updateEmployeeProfileController,
   updateEmployeeProfessionalController,
+  updateEmployeeEmployerController,
 } from '../controllers/employee.controller'
 import { verifyJWT } from '../middleware/verifyJWT'
 
@@ -28,5 +29,8 @@ router.post('/profile', verifyJWT, updateEmployeeProfileController)
 
 // Step 2: Professional details
 router.post('/professional', verifyJWT, updateEmployeeProfessionalController)
+
+// Step 3: Employer details & Complete Onboarding
+router.post('/employer-details', verifyJWT, updateEmployeeEmployerController)
 
 export default router

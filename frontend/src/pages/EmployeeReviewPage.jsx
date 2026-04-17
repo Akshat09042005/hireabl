@@ -1,6 +1,8 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { CheckCircle, Pencil } from 'lucide-react'
+import { CheckCircle, Pencil, Loader2, Check } from 'lucide-react'
+import { useAuth } from '../context/AuthContext'
+import { getErrorMessage } from '../utils/apiError'
 
 function ReviewRow({ label, value }) {
   if (!value) return null
@@ -63,9 +65,15 @@ function EditConfirmModal({ onCancel, onConfirm }) {
   )
 }
 
+const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || 'http://localhost:5051'
+
 function EmployeeReviewPage() {
   const navigate = useNavigate()
   const [modal, setModal] = useState(null)
+
+  const [isSubmitting, setIsSubmitting] = useState(false)
+  const [error, setError] = useState('')
+  const { token } = useAuth()
 
   let step1 = {}
   let step2 = {}
@@ -78,19 +86,51 @@ function EmployeeReviewPage() {
   const handleEdit = (path) => setModal(path)
   const confirmEdit = () => { navigate(modal); setModal(null) }
 
-  const handleSubmit = () => {
-    localStorage.removeItem('step1Data')
-    localStorage.removeItem('step2Data')
-    localStorage.removeItem('step3Data')
-    localStorage.removeItem('resumeData')
-    navigate('/dashboard')
+  const handleSubmit = async () => {
+    try {
+      setIsSubmitting(true)
+      setError('')
+
+      const res = await fetch(`${BACKEND_URL}/api/v1/employee/employer-details`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`
+        },
+        body: JSON.stringify(step3)
+      })
+
+      const json = await res.json()
+      if (!res.ok) {
+        throw new Error(getErrorMessage(json, 'Submission failed'))
+      }
+
+      localStorage.removeItem('step1Data')
+      localStorage.removeItem('step2Data')
+      localStorage.removeItem('step3Data')
+      localStorage.removeItem('resumeData')
+      navigate('/dashboard')
+    } catch (err) {
+      setError(err.message || 'Error occurred while saving.')
+    } finally {
+      setIsSubmitting(false)
+    }
   }
 
   return (
     <div className="min-h-screen bg-[#f6f8fb] font-['Inter']">
-      {/* Top Header Strip */}
-      <header className="w-full bg-white border-b border-[#e5e7eb] h-20 flex items-center justify-between px-10">
-        <img src="/logo.jpg" alt="Hireabl" className="h-12 w-auto object-contain rounded" />
+      {/* Header */}
+      <header className="w-full bg-white flex items-center justify-between px-8 py-4 shadow-[0_2px_10px_rgba(0,0,0,0.03)] mb-8">
+        <div className="flex items-center gap-3">
+          <img src="/logo-nobg.png" alt="Hireabl Logo" className="h-10 w-auto object-contain" />
+          <span className="text-2xl font-[poppins] font-medium text-blue-700 tracking-tight cursor-default">hireabl</span>
+        </div>
+        <div className="text-sm font-medium text-[#4b5563]">
+          Need help?{' '}
+          <a href="mailto:support@hireabl.com" className="text-[#2563eb] font-semibold hover:underline">
+            Contact Support
+          </a>
+        </div>
       </header>
 
       {/* Edit Confirmation Modal */}
@@ -101,14 +141,30 @@ function EmployeeReviewPage() {
         />
       )}
 
-      <main className="flex items-start justify-center min-h-[calc(100vh-80px)] py-8 px-4">
-        <section className="w-full max-w-lg space-y-4">
+      <main className="flex justify-center w-full max-w-[1050px] mx-auto px-6 pb-16">
+        <div className="flex flex-col md:flex-row w-full bg-white rounded-[24px] shadow-sm overflow-hidden min-h-[600px] border border-[#f1f1f1]">
+          
+          {/* Left Form Section */}
+          <section className="flex-1 w-full p-8 md:p-12 lg:p-14 flex flex-col justify-center space-y-4">
 
-          {/* Header */}
-          <div className="text-center mb-2">
-            <h1 className="text-xl md:text-2xl font-semibold text-[#111827]">Review Your Profile</h1>
-            <p className="text-xs text-[#9ca3af] mt-0.5">Step 4 of 4 · Confirm your details before submitting</p>
-          </div>
+            <div className="mb-10 text-center">
+              <h1 className="text-[32px] font-bold text-[#111827] mb-3">Review Profile</h1>
+              <p className="text-[14px] text-[#6b7280]">
+                Confirm your details before concluding your onboarding.
+              </p>
+            </div>
+
+            {/* Stepper Indicator */}
+            <div className="flex items-center justify-center mb-8">
+              {[1, 2, 3, 4].map((s) => (
+                <div key={s} className="flex items-center">
+                  <div className={`w-8 h-8 rounded-full flex items-center justify-center text-[14px] font-bold ${s === 4 ? 'bg-black text-white' : s < 4 ? 'bg-black text-white' : 'bg-gray-100 text-gray-400'}`}>
+                    {s < 4 ? <Check size={16} /> : s}
+                  </div>
+                  {s < 4 && <div className={`w-6 sm:w-10 h-1 mx-2 rounded-full ${s < 4 ? 'bg-black' : 'bg-gray-100'}`} />}
+                </div>
+              ))}
+            </div>
 
           {/* Section 1 — Basic Info */}
           <SectionCard title="Basic Info" onEdit={() => handleEdit('/employee/onboarding')}>
@@ -145,24 +201,40 @@ function EmployeeReviewPage() {
             <ReviewRow label="CEO Email" value={step3.ceoEmail} />
           </SectionCard>
 
+          {error && <div className="text-sm text-red-500 mb-2 px-1">{error}</div>}
+          
           {/* Actions */}
           <div className="flex gap-3 pt-2">
             <button
               type="button"
               onClick={() => navigate('/employee/employer-details')}
-              className="flex-1 rounded-lg border border-[#d1d5db] px-4 py-2.5 text-sm font-medium text-[#374151] hover:bg-[#f9fafb] transition"
+              disabled={isSubmitting}
+              className="flex-1 rounded-lg border border-[#d1d5db] px-4 py-2.5 text-sm font-medium text-[#374151] hover:bg-[#f9fafb] transition disabled:opacity-50"
             >
               ← Back
             </button>
             <button
               type="button"
               onClick={handleSubmit}
-              className="flex-1 rounded-lg bg-[#2563eb] px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-[#1d4ed8]"
+              disabled={isSubmitting}
+              className="flex-1 flex items-center justify-center gap-2 rounded-lg bg-[#2563eb] px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-[#1d4ed8] disabled:opacity-50"
             >
-              Submit & Continue →
+              {isSubmitting ? <><Loader2 size={16} className="animate-spin" /> Submitting...</> : 'Submit & Continue →'}
             </button>
-          </div>
-        </section>
+            </div>
+          </section>
+
+          {/* Right Section (Illustration) */}
+          <section className="hidden md:flex flex-col items-center justify-center p-8 bg-[#f9faff] w-[380px] shrink-0 border-l border-[#f1f1f1]">
+             <img src="/logo-nobg.png" alt="Hireabl Illustration" className="w-[180px] opacity-20 mb-8" />
+             <div className="text-center px-6">
+                <h3 className="text-[18px] font-bold text-[#111827] mb-3">Ready to launch!</h3>
+                <p className="text-[14px] text-[#6b7280] leading-relaxed">
+                  Take a final look at your profile. We'll use this information to match you with top companies directly on our platform.
+                </p>
+             </div>
+          </section>
+        </div>
       </main>
     </div>
   )

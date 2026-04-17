@@ -1074,10 +1074,19 @@ export namespace Prisma {
     phone: string | null
     name: string | null
     country: string | null
+    state: string | null
     city: string | null
     qualification: string | null
     companyName: string | null
+    hrEmail: string | null
+    managerEmail: string | null
+    ceoEmail: string | null
     designation: string | null
+    roleInCompany: string | null
+    companyWebsite: string | null
+    industry: string | null
+    companySize: string | null
+    gstNumber: string | null
     yearsOfExperience: number | null
     workEmail: string | null
     profilePhoto: string | null
@@ -1094,10 +1103,19 @@ export namespace Prisma {
     phone: string | null
     name: string | null
     country: string | null
+    state: string | null
     city: string | null
     qualification: string | null
     companyName: string | null
+    hrEmail: string | null
+    managerEmail: string | null
+    ceoEmail: string | null
     designation: string | null
+    roleInCompany: string | null
+    companyWebsite: string | null
+    industry: string | null
+    companySize: string | null
+    gstNumber: string | null
     yearsOfExperience: number | null
     workEmail: string | null
     profilePhoto: string | null
@@ -1114,10 +1132,19 @@ export namespace Prisma {
     phone: number
     name: number
     country: number
+    state: number
     city: number
     qualification: number
     companyName: number
+    hrEmail: number
+    managerEmail: number
+    ceoEmail: number
     designation: number
+    roleInCompany: number
+    companyWebsite: number
+    industry: number
+    companySize: number
+    gstNumber: number
     skills: number
     yearsOfExperience: number
     workEmail: number
@@ -1145,10 +1172,19 @@ export namespace Prisma {
     phone?: true
     name?: true
     country?: true
+    state?: true
     city?: true
     qualification?: true
     companyName?: true
+    hrEmail?: true
+    managerEmail?: true
+    ceoEmail?: true
     designation?: true
+    roleInCompany?: true
+    companyWebsite?: true
+    industry?: true
+    companySize?: true
+    gstNumber?: true
     yearsOfExperience?: true
     workEmail?: true
     profilePhoto?: true
@@ -1165,10 +1201,19 @@ export namespace Prisma {
     phone?: true
     name?: true
     country?: true
+    state?: true
     city?: true
     qualification?: true
     companyName?: true
+    hrEmail?: true
+    managerEmail?: true
+    ceoEmail?: true
     designation?: true
+    roleInCompany?: true
+    companyWebsite?: true
+    industry?: true
+    companySize?: true
+    gstNumber?: true
     yearsOfExperience?: true
     workEmail?: true
     profilePhoto?: true
@@ -1185,10 +1230,19 @@ export namespace Prisma {
     phone?: true
     name?: true
     country?: true
+    state?: true
     city?: true
     qualification?: true
     companyName?: true
+    hrEmail?: true
+    managerEmail?: true
+    ceoEmail?: true
     designation?: true
+    roleInCompany?: true
+    companyWebsite?: true
+    industry?: true
+    companySize?: true
+    gstNumber?: true
     skills?: true
     yearsOfExperience?: true
     workEmail?: true
@@ -1293,10 +1347,19 @@ export namespace Prisma {
     phone: string | null
     name: string | null
     country: string | null
+    state: string | null
     city: string | null
     qualification: string | null
     companyName: string | null
+    hrEmail: string | null
+    managerEmail: string | null
+    ceoEmail: string | null
     designation: string | null
+    roleInCompany: string | null
+    companyWebsite: string | null
+    industry: string | null
+    companySize: string | null
+    gstNumber: string | null
     skills: string[]
     yearsOfExperience: number | null
     workEmail: string | null
@@ -1333,10 +1396,19 @@ export namespace Prisma {
     phone?: boolean
     name?: boolean
     country?: boolean
+    state?: boolean
     city?: boolean
     qualification?: boolean
     companyName?: boolean
+    hrEmail?: boolean
+    managerEmail?: boolean
+    ceoEmail?: boolean
     designation?: boolean
+    roleInCompany?: boolean
+    companyWebsite?: boolean
+    industry?: boolean
+    companySize?: boolean
+    gstNumber?: boolean
     skills?: boolean
     yearsOfExperience?: boolean
     workEmail?: boolean
@@ -1356,10 +1428,19 @@ export namespace Prisma {
     phone?: boolean
     name?: boolean
     country?: boolean
+    state?: boolean
     city?: boolean
     qualification?: boolean
     companyName?: boolean
+    hrEmail?: boolean
+    managerEmail?: boolean
+    ceoEmail?: boolean
     designation?: boolean
+    roleInCompany?: boolean
+    companyWebsite?: boolean
+    industry?: boolean
+    companySize?: boolean
+    gstNumber?: boolean
     skills?: boolean
     yearsOfExperience?: boolean
     workEmail?: boolean
@@ -1377,10 +1458,19 @@ export namespace Prisma {
     phone?: boolean
     name?: boolean
     country?: boolean
+    state?: boolean
     city?: boolean
     qualification?: boolean
     companyName?: boolean
+    hrEmail?: boolean
+    managerEmail?: boolean
+    ceoEmail?: boolean
     designation?: boolean
+    roleInCompany?: boolean
+    companyWebsite?: boolean
+    industry?: boolean
+    companySize?: boolean
+    gstNumber?: boolean
     skills?: boolean
     yearsOfExperience?: boolean
     workEmail?: boolean
@@ -1398,10 +1488,19 @@ export namespace Prisma {
     phone?: boolean
     name?: boolean
     country?: boolean
+    state?: boolean
     city?: boolean
     qualification?: boolean
     companyName?: boolean
+    hrEmail?: boolean
+    managerEmail?: boolean
+    ceoEmail?: boolean
     designation?: boolean
+    roleInCompany?: boolean
+    companyWebsite?: boolean
+    industry?: boolean
+    companySize?: boolean
+    gstNumber?: boolean
     skills?: boolean
     yearsOfExperience?: boolean
     workEmail?: boolean
@@ -1413,7 +1512,7 @@ export namespace Prisma {
     createdAt?: boolean
   }
 
-  export type UserOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "email" | "phone" | "name" | "country" | "city" | "qualification" | "companyName" | "designation" | "skills" | "yearsOfExperience" | "workEmail" | "profilePhoto" | "onboardingCompleted" | "provider" | "providerId" | "role" | "createdAt", ExtArgs["result"]["user"]>
+  export type UserOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "email" | "phone" | "name" | "country" | "state" | "city" | "qualification" | "companyName" | "hrEmail" | "managerEmail" | "ceoEmail" | "designation" | "roleInCompany" | "companyWebsite" | "industry" | "companySize" | "gstNumber" | "skills" | "yearsOfExperience" | "workEmail" | "profilePhoto" | "onboardingCompleted" | "provider" | "providerId" | "role" | "createdAt", ExtArgs["result"]["user"]>
   export type UserInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     employee?: boolean | User$employeeArgs<ExtArgs>
     employer?: boolean | User$employerArgs<ExtArgs>
@@ -1433,10 +1532,19 @@ export namespace Prisma {
       phone: string | null
       name: string | null
       country: string | null
+      state: string | null
       city: string | null
       qualification: string | null
       companyName: string | null
+      hrEmail: string | null
+      managerEmail: string | null
+      ceoEmail: string | null
       designation: string | null
+      roleInCompany: string | null
+      companyWebsite: string | null
+      industry: string | null
+      companySize: string | null
+      gstNumber: string | null
       skills: string[]
       yearsOfExperience: number | null
       workEmail: string | null
@@ -1876,10 +1984,19 @@ export namespace Prisma {
     readonly phone: FieldRef<"User", 'String'>
     readonly name: FieldRef<"User", 'String'>
     readonly country: FieldRef<"User", 'String'>
+    readonly state: FieldRef<"User", 'String'>
     readonly city: FieldRef<"User", 'String'>
     readonly qualification: FieldRef<"User", 'String'>
     readonly companyName: FieldRef<"User", 'String'>
+    readonly hrEmail: FieldRef<"User", 'String'>
+    readonly managerEmail: FieldRef<"User", 'String'>
+    readonly ceoEmail: FieldRef<"User", 'String'>
     readonly designation: FieldRef<"User", 'String'>
+    readonly roleInCompany: FieldRef<"User", 'String'>
+    readonly companyWebsite: FieldRef<"User", 'String'>
+    readonly industry: FieldRef<"User", 'String'>
+    readonly companySize: FieldRef<"User", 'String'>
+    readonly gstNumber: FieldRef<"User", 'String'>
     readonly skills: FieldRef<"User", 'String[]'>
     readonly yearsOfExperience: FieldRef<"User", 'Int'>
     readonly workEmail: FieldRef<"User", 'String'>
@@ -4458,10 +4575,19 @@ export namespace Prisma {
     phone: 'phone',
     name: 'name',
     country: 'country',
+    state: 'state',
     city: 'city',
     qualification: 'qualification',
     companyName: 'companyName',
+    hrEmail: 'hrEmail',
+    managerEmail: 'managerEmail',
+    ceoEmail: 'ceoEmail',
     designation: 'designation',
+    roleInCompany: 'roleInCompany',
+    companyWebsite: 'companyWebsite',
+    industry: 'industry',
+    companySize: 'companySize',
+    gstNumber: 'gstNumber',
     skills: 'skills',
     yearsOfExperience: 'yearsOfExperience',
     workEmail: 'workEmail',
@@ -4600,10 +4726,19 @@ export namespace Prisma {
     phone?: StringNullableFilter<"User"> | string | null
     name?: StringNullableFilter<"User"> | string | null
     country?: StringNullableFilter<"User"> | string | null
+    state?: StringNullableFilter<"User"> | string | null
     city?: StringNullableFilter<"User"> | string | null
     qualification?: StringNullableFilter<"User"> | string | null
     companyName?: StringNullableFilter<"User"> | string | null
+    hrEmail?: StringNullableFilter<"User"> | string | null
+    managerEmail?: StringNullableFilter<"User"> | string | null
+    ceoEmail?: StringNullableFilter<"User"> | string | null
     designation?: StringNullableFilter<"User"> | string | null
+    roleInCompany?: StringNullableFilter<"User"> | string | null
+    companyWebsite?: StringNullableFilter<"User"> | string | null
+    industry?: StringNullableFilter<"User"> | string | null
+    companySize?: StringNullableFilter<"User"> | string | null
+    gstNumber?: StringNullableFilter<"User"> | string | null
     skills?: StringNullableListFilter<"User">
     yearsOfExperience?: IntNullableFilter<"User"> | number | null
     workEmail?: StringNullableFilter<"User"> | string | null
@@ -4623,10 +4758,19 @@ export namespace Prisma {
     phone?: SortOrderInput | SortOrder
     name?: SortOrderInput | SortOrder
     country?: SortOrderInput | SortOrder
+    state?: SortOrderInput | SortOrder
     city?: SortOrderInput | SortOrder
     qualification?: SortOrderInput | SortOrder
     companyName?: SortOrderInput | SortOrder
+    hrEmail?: SortOrderInput | SortOrder
+    managerEmail?: SortOrderInput | SortOrder
+    ceoEmail?: SortOrderInput | SortOrder
     designation?: SortOrderInput | SortOrder
+    roleInCompany?: SortOrderInput | SortOrder
+    companyWebsite?: SortOrderInput | SortOrder
+    industry?: SortOrderInput | SortOrder
+    companySize?: SortOrderInput | SortOrder
+    gstNumber?: SortOrderInput | SortOrder
     skills?: SortOrder
     yearsOfExperience?: SortOrderInput | SortOrder
     workEmail?: SortOrderInput | SortOrder
@@ -4650,10 +4794,19 @@ export namespace Prisma {
     NOT?: UserWhereInput | UserWhereInput[]
     name?: StringNullableFilter<"User"> | string | null
     country?: StringNullableFilter<"User"> | string | null
+    state?: StringNullableFilter<"User"> | string | null
     city?: StringNullableFilter<"User"> | string | null
     qualification?: StringNullableFilter<"User"> | string | null
     companyName?: StringNullableFilter<"User"> | string | null
+    hrEmail?: StringNullableFilter<"User"> | string | null
+    managerEmail?: StringNullableFilter<"User"> | string | null
+    ceoEmail?: StringNullableFilter<"User"> | string | null
     designation?: StringNullableFilter<"User"> | string | null
+    roleInCompany?: StringNullableFilter<"User"> | string | null
+    companyWebsite?: StringNullableFilter<"User"> | string | null
+    industry?: StringNullableFilter<"User"> | string | null
+    companySize?: StringNullableFilter<"User"> | string | null
+    gstNumber?: StringNullableFilter<"User"> | string | null
     skills?: StringNullableListFilter<"User">
     yearsOfExperience?: IntNullableFilter<"User"> | number | null
     workEmail?: StringNullableFilter<"User"> | string | null
@@ -4673,10 +4826,19 @@ export namespace Prisma {
     phone?: SortOrderInput | SortOrder
     name?: SortOrderInput | SortOrder
     country?: SortOrderInput | SortOrder
+    state?: SortOrderInput | SortOrder
     city?: SortOrderInput | SortOrder
     qualification?: SortOrderInput | SortOrder
     companyName?: SortOrderInput | SortOrder
+    hrEmail?: SortOrderInput | SortOrder
+    managerEmail?: SortOrderInput | SortOrder
+    ceoEmail?: SortOrderInput | SortOrder
     designation?: SortOrderInput | SortOrder
+    roleInCompany?: SortOrderInput | SortOrder
+    companyWebsite?: SortOrderInput | SortOrder
+    industry?: SortOrderInput | SortOrder
+    companySize?: SortOrderInput | SortOrder
+    gstNumber?: SortOrderInput | SortOrder
     skills?: SortOrder
     yearsOfExperience?: SortOrderInput | SortOrder
     workEmail?: SortOrderInput | SortOrder
@@ -4702,10 +4864,19 @@ export namespace Prisma {
     phone?: StringNullableWithAggregatesFilter<"User"> | string | null
     name?: StringNullableWithAggregatesFilter<"User"> | string | null
     country?: StringNullableWithAggregatesFilter<"User"> | string | null
+    state?: StringNullableWithAggregatesFilter<"User"> | string | null
     city?: StringNullableWithAggregatesFilter<"User"> | string | null
     qualification?: StringNullableWithAggregatesFilter<"User"> | string | null
     companyName?: StringNullableWithAggregatesFilter<"User"> | string | null
+    hrEmail?: StringNullableWithAggregatesFilter<"User"> | string | null
+    managerEmail?: StringNullableWithAggregatesFilter<"User"> | string | null
+    ceoEmail?: StringNullableWithAggregatesFilter<"User"> | string | null
     designation?: StringNullableWithAggregatesFilter<"User"> | string | null
+    roleInCompany?: StringNullableWithAggregatesFilter<"User"> | string | null
+    companyWebsite?: StringNullableWithAggregatesFilter<"User"> | string | null
+    industry?: StringNullableWithAggregatesFilter<"User"> | string | null
+    companySize?: StringNullableWithAggregatesFilter<"User"> | string | null
+    gstNumber?: StringNullableWithAggregatesFilter<"User"> | string | null
     skills?: StringNullableListFilter<"User">
     yearsOfExperience?: IntNullableWithAggregatesFilter<"User"> | number | null
     workEmail?: StringNullableWithAggregatesFilter<"User"> | string | null
@@ -4823,10 +4994,19 @@ export namespace Prisma {
     phone?: string | null
     name?: string | null
     country?: string | null
+    state?: string | null
     city?: string | null
     qualification?: string | null
     companyName?: string | null
+    hrEmail?: string | null
+    managerEmail?: string | null
+    ceoEmail?: string | null
     designation?: string | null
+    roleInCompany?: string | null
+    companyWebsite?: string | null
+    industry?: string | null
+    companySize?: string | null
+    gstNumber?: string | null
     skills?: UserCreateskillsInput | string[]
     yearsOfExperience?: number | null
     workEmail?: string | null
@@ -4846,10 +5026,19 @@ export namespace Prisma {
     phone?: string | null
     name?: string | null
     country?: string | null
+    state?: string | null
     city?: string | null
     qualification?: string | null
     companyName?: string | null
+    hrEmail?: string | null
+    managerEmail?: string | null
+    ceoEmail?: string | null
     designation?: string | null
+    roleInCompany?: string | null
+    companyWebsite?: string | null
+    industry?: string | null
+    companySize?: string | null
+    gstNumber?: string | null
     skills?: UserCreateskillsInput | string[]
     yearsOfExperience?: number | null
     workEmail?: string | null
@@ -4869,10 +5058,19 @@ export namespace Prisma {
     phone?: NullableStringFieldUpdateOperationsInput | string | null
     name?: NullableStringFieldUpdateOperationsInput | string | null
     country?: NullableStringFieldUpdateOperationsInput | string | null
+    state?: NullableStringFieldUpdateOperationsInput | string | null
     city?: NullableStringFieldUpdateOperationsInput | string | null
     qualification?: NullableStringFieldUpdateOperationsInput | string | null
     companyName?: NullableStringFieldUpdateOperationsInput | string | null
+    hrEmail?: NullableStringFieldUpdateOperationsInput | string | null
+    managerEmail?: NullableStringFieldUpdateOperationsInput | string | null
+    ceoEmail?: NullableStringFieldUpdateOperationsInput | string | null
     designation?: NullableStringFieldUpdateOperationsInput | string | null
+    roleInCompany?: NullableStringFieldUpdateOperationsInput | string | null
+    companyWebsite?: NullableStringFieldUpdateOperationsInput | string | null
+    industry?: NullableStringFieldUpdateOperationsInput | string | null
+    companySize?: NullableStringFieldUpdateOperationsInput | string | null
+    gstNumber?: NullableStringFieldUpdateOperationsInput | string | null
     skills?: UserUpdateskillsInput | string[]
     yearsOfExperience?: NullableIntFieldUpdateOperationsInput | number | null
     workEmail?: NullableStringFieldUpdateOperationsInput | string | null
@@ -4892,10 +5090,19 @@ export namespace Prisma {
     phone?: NullableStringFieldUpdateOperationsInput | string | null
     name?: NullableStringFieldUpdateOperationsInput | string | null
     country?: NullableStringFieldUpdateOperationsInput | string | null
+    state?: NullableStringFieldUpdateOperationsInput | string | null
     city?: NullableStringFieldUpdateOperationsInput | string | null
     qualification?: NullableStringFieldUpdateOperationsInput | string | null
     companyName?: NullableStringFieldUpdateOperationsInput | string | null
+    hrEmail?: NullableStringFieldUpdateOperationsInput | string | null
+    managerEmail?: NullableStringFieldUpdateOperationsInput | string | null
+    ceoEmail?: NullableStringFieldUpdateOperationsInput | string | null
     designation?: NullableStringFieldUpdateOperationsInput | string | null
+    roleInCompany?: NullableStringFieldUpdateOperationsInput | string | null
+    companyWebsite?: NullableStringFieldUpdateOperationsInput | string | null
+    industry?: NullableStringFieldUpdateOperationsInput | string | null
+    companySize?: NullableStringFieldUpdateOperationsInput | string | null
+    gstNumber?: NullableStringFieldUpdateOperationsInput | string | null
     skills?: UserUpdateskillsInput | string[]
     yearsOfExperience?: NullableIntFieldUpdateOperationsInput | number | null
     workEmail?: NullableStringFieldUpdateOperationsInput | string | null
@@ -4915,10 +5122,19 @@ export namespace Prisma {
     phone?: string | null
     name?: string | null
     country?: string | null
+    state?: string | null
     city?: string | null
     qualification?: string | null
     companyName?: string | null
+    hrEmail?: string | null
+    managerEmail?: string | null
+    ceoEmail?: string | null
     designation?: string | null
+    roleInCompany?: string | null
+    companyWebsite?: string | null
+    industry?: string | null
+    companySize?: string | null
+    gstNumber?: string | null
     skills?: UserCreateskillsInput | string[]
     yearsOfExperience?: number | null
     workEmail?: string | null
@@ -4936,10 +5152,19 @@ export namespace Prisma {
     phone?: NullableStringFieldUpdateOperationsInput | string | null
     name?: NullableStringFieldUpdateOperationsInput | string | null
     country?: NullableStringFieldUpdateOperationsInput | string | null
+    state?: NullableStringFieldUpdateOperationsInput | string | null
     city?: NullableStringFieldUpdateOperationsInput | string | null
     qualification?: NullableStringFieldUpdateOperationsInput | string | null
     companyName?: NullableStringFieldUpdateOperationsInput | string | null
+    hrEmail?: NullableStringFieldUpdateOperationsInput | string | null
+    managerEmail?: NullableStringFieldUpdateOperationsInput | string | null
+    ceoEmail?: NullableStringFieldUpdateOperationsInput | string | null
     designation?: NullableStringFieldUpdateOperationsInput | string | null
+    roleInCompany?: NullableStringFieldUpdateOperationsInput | string | null
+    companyWebsite?: NullableStringFieldUpdateOperationsInput | string | null
+    industry?: NullableStringFieldUpdateOperationsInput | string | null
+    companySize?: NullableStringFieldUpdateOperationsInput | string | null
+    gstNumber?: NullableStringFieldUpdateOperationsInput | string | null
     skills?: UserUpdateskillsInput | string[]
     yearsOfExperience?: NullableIntFieldUpdateOperationsInput | number | null
     workEmail?: NullableStringFieldUpdateOperationsInput | string | null
@@ -4957,10 +5182,19 @@ export namespace Prisma {
     phone?: NullableStringFieldUpdateOperationsInput | string | null
     name?: NullableStringFieldUpdateOperationsInput | string | null
     country?: NullableStringFieldUpdateOperationsInput | string | null
+    state?: NullableStringFieldUpdateOperationsInput | string | null
     city?: NullableStringFieldUpdateOperationsInput | string | null
     qualification?: NullableStringFieldUpdateOperationsInput | string | null
     companyName?: NullableStringFieldUpdateOperationsInput | string | null
+    hrEmail?: NullableStringFieldUpdateOperationsInput | string | null
+    managerEmail?: NullableStringFieldUpdateOperationsInput | string | null
+    ceoEmail?: NullableStringFieldUpdateOperationsInput | string | null
     designation?: NullableStringFieldUpdateOperationsInput | string | null
+    roleInCompany?: NullableStringFieldUpdateOperationsInput | string | null
+    companyWebsite?: NullableStringFieldUpdateOperationsInput | string | null
+    industry?: NullableStringFieldUpdateOperationsInput | string | null
+    companySize?: NullableStringFieldUpdateOperationsInput | string | null
+    gstNumber?: NullableStringFieldUpdateOperationsInput | string | null
     skills?: UserUpdateskillsInput | string[]
     yearsOfExperience?: NullableIntFieldUpdateOperationsInput | number | null
     workEmail?: NullableStringFieldUpdateOperationsInput | string | null
@@ -5159,10 +5393,19 @@ export namespace Prisma {
     phone?: SortOrder
     name?: SortOrder
     country?: SortOrder
+    state?: SortOrder
     city?: SortOrder
     qualification?: SortOrder
     companyName?: SortOrder
+    hrEmail?: SortOrder
+    managerEmail?: SortOrder
+    ceoEmail?: SortOrder
     designation?: SortOrder
+    roleInCompany?: SortOrder
+    companyWebsite?: SortOrder
+    industry?: SortOrder
+    companySize?: SortOrder
+    gstNumber?: SortOrder
     skills?: SortOrder
     yearsOfExperience?: SortOrder
     workEmail?: SortOrder
@@ -5184,10 +5427,19 @@ export namespace Prisma {
     phone?: SortOrder
     name?: SortOrder
     country?: SortOrder
+    state?: SortOrder
     city?: SortOrder
     qualification?: SortOrder
     companyName?: SortOrder
+    hrEmail?: SortOrder
+    managerEmail?: SortOrder
+    ceoEmail?: SortOrder
     designation?: SortOrder
+    roleInCompany?: SortOrder
+    companyWebsite?: SortOrder
+    industry?: SortOrder
+    companySize?: SortOrder
+    gstNumber?: SortOrder
     yearsOfExperience?: SortOrder
     workEmail?: SortOrder
     profilePhoto?: SortOrder
@@ -5204,10 +5456,19 @@ export namespace Prisma {
     phone?: SortOrder
     name?: SortOrder
     country?: SortOrder
+    state?: SortOrder
     city?: SortOrder
     qualification?: SortOrder
     companyName?: SortOrder
+    hrEmail?: SortOrder
+    managerEmail?: SortOrder
+    ceoEmail?: SortOrder
     designation?: SortOrder
+    roleInCompany?: SortOrder
+    companyWebsite?: SortOrder
+    industry?: SortOrder
+    companySize?: SortOrder
+    gstNumber?: SortOrder
     yearsOfExperience?: SortOrder
     workEmail?: SortOrder
     profilePhoto?: SortOrder
@@ -5703,10 +5964,19 @@ export namespace Prisma {
     phone?: string | null
     name?: string | null
     country?: string | null
+    state?: string | null
     city?: string | null
     qualification?: string | null
     companyName?: string | null
+    hrEmail?: string | null
+    managerEmail?: string | null
+    ceoEmail?: string | null
     designation?: string | null
+    roleInCompany?: string | null
+    companyWebsite?: string | null
+    industry?: string | null
+    companySize?: string | null
+    gstNumber?: string | null
     skills?: UserCreateskillsInput | string[]
     yearsOfExperience?: number | null
     workEmail?: string | null
@@ -5725,10 +5995,19 @@ export namespace Prisma {
     phone?: string | null
     name?: string | null
     country?: string | null
+    state?: string | null
     city?: string | null
     qualification?: string | null
     companyName?: string | null
+    hrEmail?: string | null
+    managerEmail?: string | null
+    ceoEmail?: string | null
     designation?: string | null
+    roleInCompany?: string | null
+    companyWebsite?: string | null
+    industry?: string | null
+    companySize?: string | null
+    gstNumber?: string | null
     skills?: UserCreateskillsInput | string[]
     yearsOfExperience?: number | null
     workEmail?: string | null
@@ -5763,10 +6042,19 @@ export namespace Prisma {
     phone?: NullableStringFieldUpdateOperationsInput | string | null
     name?: NullableStringFieldUpdateOperationsInput | string | null
     country?: NullableStringFieldUpdateOperationsInput | string | null
+    state?: NullableStringFieldUpdateOperationsInput | string | null
     city?: NullableStringFieldUpdateOperationsInput | string | null
     qualification?: NullableStringFieldUpdateOperationsInput | string | null
     companyName?: NullableStringFieldUpdateOperationsInput | string | null
+    hrEmail?: NullableStringFieldUpdateOperationsInput | string | null
+    managerEmail?: NullableStringFieldUpdateOperationsInput | string | null
+    ceoEmail?: NullableStringFieldUpdateOperationsInput | string | null
     designation?: NullableStringFieldUpdateOperationsInput | string | null
+    roleInCompany?: NullableStringFieldUpdateOperationsInput | string | null
+    companyWebsite?: NullableStringFieldUpdateOperationsInput | string | null
+    industry?: NullableStringFieldUpdateOperationsInput | string | null
+    companySize?: NullableStringFieldUpdateOperationsInput | string | null
+    gstNumber?: NullableStringFieldUpdateOperationsInput | string | null
     skills?: UserUpdateskillsInput | string[]
     yearsOfExperience?: NullableIntFieldUpdateOperationsInput | number | null
     workEmail?: NullableStringFieldUpdateOperationsInput | string | null
@@ -5785,10 +6073,19 @@ export namespace Prisma {
     phone?: NullableStringFieldUpdateOperationsInput | string | null
     name?: NullableStringFieldUpdateOperationsInput | string | null
     country?: NullableStringFieldUpdateOperationsInput | string | null
+    state?: NullableStringFieldUpdateOperationsInput | string | null
     city?: NullableStringFieldUpdateOperationsInput | string | null
     qualification?: NullableStringFieldUpdateOperationsInput | string | null
     companyName?: NullableStringFieldUpdateOperationsInput | string | null
+    hrEmail?: NullableStringFieldUpdateOperationsInput | string | null
+    managerEmail?: NullableStringFieldUpdateOperationsInput | string | null
+    ceoEmail?: NullableStringFieldUpdateOperationsInput | string | null
     designation?: NullableStringFieldUpdateOperationsInput | string | null
+    roleInCompany?: NullableStringFieldUpdateOperationsInput | string | null
+    companyWebsite?: NullableStringFieldUpdateOperationsInput | string | null
+    industry?: NullableStringFieldUpdateOperationsInput | string | null
+    companySize?: NullableStringFieldUpdateOperationsInput | string | null
+    gstNumber?: NullableStringFieldUpdateOperationsInput | string | null
     skills?: UserUpdateskillsInput | string[]
     yearsOfExperience?: NullableIntFieldUpdateOperationsInput | number | null
     workEmail?: NullableStringFieldUpdateOperationsInput | string | null
@@ -5807,10 +6104,19 @@ export namespace Prisma {
     phone?: string | null
     name?: string | null
     country?: string | null
+    state?: string | null
     city?: string | null
     qualification?: string | null
     companyName?: string | null
+    hrEmail?: string | null
+    managerEmail?: string | null
+    ceoEmail?: string | null
     designation?: string | null
+    roleInCompany?: string | null
+    companyWebsite?: string | null
+    industry?: string | null
+    companySize?: string | null
+    gstNumber?: string | null
     skills?: UserCreateskillsInput | string[]
     yearsOfExperience?: number | null
     workEmail?: string | null
@@ -5829,10 +6135,19 @@ export namespace Prisma {
     phone?: string | null
     name?: string | null
     country?: string | null
+    state?: string | null
     city?: string | null
     qualification?: string | null
     companyName?: string | null
+    hrEmail?: string | null
+    managerEmail?: string | null
+    ceoEmail?: string | null
     designation?: string | null
+    roleInCompany?: string | null
+    companyWebsite?: string | null
+    industry?: string | null
+    companySize?: string | null
+    gstNumber?: string | null
     skills?: UserCreateskillsInput | string[]
     yearsOfExperience?: number | null
     workEmail?: string | null
@@ -5867,10 +6182,19 @@ export namespace Prisma {
     phone?: NullableStringFieldUpdateOperationsInput | string | null
     name?: NullableStringFieldUpdateOperationsInput | string | null
     country?: NullableStringFieldUpdateOperationsInput | string | null
+    state?: NullableStringFieldUpdateOperationsInput | string | null
     city?: NullableStringFieldUpdateOperationsInput | string | null
     qualification?: NullableStringFieldUpdateOperationsInput | string | null
     companyName?: NullableStringFieldUpdateOperationsInput | string | null
+    hrEmail?: NullableStringFieldUpdateOperationsInput | string | null
+    managerEmail?: NullableStringFieldUpdateOperationsInput | string | null
+    ceoEmail?: NullableStringFieldUpdateOperationsInput | string | null
     designation?: NullableStringFieldUpdateOperationsInput | string | null
+    roleInCompany?: NullableStringFieldUpdateOperationsInput | string | null
+    companyWebsite?: NullableStringFieldUpdateOperationsInput | string | null
+    industry?: NullableStringFieldUpdateOperationsInput | string | null
+    companySize?: NullableStringFieldUpdateOperationsInput | string | null
+    gstNumber?: NullableStringFieldUpdateOperationsInput | string | null
     skills?: UserUpdateskillsInput | string[]
     yearsOfExperience?: NullableIntFieldUpdateOperationsInput | number | null
     workEmail?: NullableStringFieldUpdateOperationsInput | string | null
@@ -5889,10 +6213,19 @@ export namespace Prisma {
     phone?: NullableStringFieldUpdateOperationsInput | string | null
     name?: NullableStringFieldUpdateOperationsInput | string | null
     country?: NullableStringFieldUpdateOperationsInput | string | null
+    state?: NullableStringFieldUpdateOperationsInput | string | null
     city?: NullableStringFieldUpdateOperationsInput | string | null
     qualification?: NullableStringFieldUpdateOperationsInput | string | null
     companyName?: NullableStringFieldUpdateOperationsInput | string | null
+    hrEmail?: NullableStringFieldUpdateOperationsInput | string | null
+    managerEmail?: NullableStringFieldUpdateOperationsInput | string | null
+    ceoEmail?: NullableStringFieldUpdateOperationsInput | string | null
     designation?: NullableStringFieldUpdateOperationsInput | string | null
+    roleInCompany?: NullableStringFieldUpdateOperationsInput | string | null
+    companyWebsite?: NullableStringFieldUpdateOperationsInput | string | null
+    industry?: NullableStringFieldUpdateOperationsInput | string | null
+    companySize?: NullableStringFieldUpdateOperationsInput | string | null
+    gstNumber?: NullableStringFieldUpdateOperationsInput | string | null
     skills?: UserUpdateskillsInput | string[]
     yearsOfExperience?: NullableIntFieldUpdateOperationsInput | number | null
     workEmail?: NullableStringFieldUpdateOperationsInput | string | null
